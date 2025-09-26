@@ -12,6 +12,10 @@
   - Policy database services: `LGDPDB01` (delete), `LGIPDB01` (inquire), `LGUPDB01` (update) with corresponding VSAM sync services
   - Customer database services: `LGICDB01` (inquire), `LGUCDB01` (update), `LGACDB02` (security) with VSAM coordination
   - All database services follow consistent patterns: DB2 operations, VSAM synchronization, comprehensive error handling via `LGSTSQ`
+- **PHASE 5 TASKS 6 & 7 COMPLETE:** Documented simulation control/error handling and CICS event processing configuration:
+  - Error and control flows: `ONCICS` (CICS connection management), `STOP` (simulation termination), `WASERROR` (web service error handling)
+  - CICS monitoring: `Transaction_Counters.evbind` (event processing configuration), `LGASTAT1`/`LGWEBST5` (statistics collection programs)
+  - All simulation components integrate with `#SSVARS` shared variables and support comprehensive workload testing infrastructure
 
 ## Dependency Notes
 - `LGAPOL01` depends on `LGAPDB01` (database insert logic), `LGSTSQ` (TDQ logging helper), and the `LGCMAREA` copybook.
@@ -23,6 +27,7 @@
 - **Phase 2 Database Service Dependencies:** All database backend services (`*DB01`) depend on DB2 tables, corresponding VSAM sync services (`*VS01`), shared copybooks (`LGCMAREA`, `LGPOLICY`), and error logging (`LGSTSQ`).
 - **Database-VSAM Synchronization Pattern:** Policy services sync to `KSDSPOLY`, customer services sync to `KSDSCUST`; all VSAM services depend on `LGCMAREA` and `LGSTSQ`.
 - **Customer Security Integration:** `LGACDB01` coordinates with `LGACDB02` for secure credential management in `CUSTOMER_SECURE` table.
+- **Phase 5 Simulation and Monitoring Dependencies:** Error control flows (`ONCICS`, `STOP`, `WASERROR`) depend on `#SSVARS` shared variables; CICS event processing (`Transaction_Counters.evbind`) integrates with statistics programs (`LGASTAT1`, `LGWEBST5`) and transaction `LGST` for real-time monitoring of GenApp business transactions.
 
 ## Tooling
 - Dependency graph helper lives at `tools/dep_graph.py`; default store is `dependency_graph.json`.
