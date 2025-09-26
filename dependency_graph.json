@@ -35,6 +35,7 @@
         "LGACDB02",
         "LGACVS01",
         "LGCMAREA",
+        "LGPOLICY",
         "LGSTSQ"
       ],
       "description": "Add customer DB2 backend service",
@@ -97,7 +98,7 @@
     },
     "LGCMAREA": {
       "depends_on": [],
-      "description": "Shared commarea layout",
+      "description": "Core communication area structure - defines DFHCOMMAREA layout with customer/policy request variants and unified data exchange format for all GenApp transactions",
       "type": "copybook"
     },
     "LGDPDB01": {
@@ -115,7 +116,9 @@
       "type": "cobol"
     },
     "LGICDB01": {
-      "depends_on": [],
+      "depends_on": [
+        "LGPOLICY"
+      ],
       "description": null,
       "type": null
     },
@@ -129,7 +132,9 @@
       "type": "cobol"
     },
     "LGIPDB01": {
-      "depends_on": [],
+      "depends_on": [
+        "LGPOLICY"
+      ],
       "description": null,
       "type": null
     },
@@ -153,7 +158,9 @@
       "type": "cobol"
     },
     "LGUCDB01": {
-      "depends_on": [],
+      "depends_on": [
+        "LGPOLICY"
+      ],
       "description": null,
       "type": null
     },
@@ -167,7 +174,9 @@
       "type": "cobol"
     },
     "LGUPDB01": {
-      "depends_on": [],
+      "depends_on": [
+        "LGPOLICY"
+      ],
       "description": null,
       "type": null
     },
