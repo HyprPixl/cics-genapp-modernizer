@@ -22,6 +22,24 @@ This file coordinates multiple parallel workstreams for documenting and moderniz
 - [x] Generated current state visualization (`tools/dependency_graph_current_state.png`)
 - [x] Identified documentation priorities based on dependency analysis
 
+### Documentation Start Recommendation
+
+**IMMEDIATE ACTION:** Begin full inline documentation with these components in this order:
+
+1. **Start Here - Foundation Components** (Can be done in parallel):
+   - `LGCMAREA` copybook - 11 dependents make this the highest impact starting point
+   - `LGSTSQ` COBOL program - Central logging used by all transaction programs
+
+2. **Next - Core Integrators** (Serial dependency - do in order):
+   - `LGAPDB01` - Most complex component with 9 dependencies, policy creation orchestrator
+   - `LGACDB01` - Customer domain integration point with 4 dependencies
+
+3. **Then - Transaction Layer** (Can parallelize after backends documented):
+   - All front-end programs following the established patterns
+   - These can be documented in parallel streams once foundation is solid
+
+**Rationale:** The dependency analysis shows LGCMAREA and LGSTSQ are architectural foundations that everything else builds upon. Starting here provides the most leverage and unblocks all other documentation work.
+
 ### Documentation Priority Recommendations
 
 Based on dependency graph analysis (26 nodes, 39 edges):
