@@ -141,6 +141,37 @@
 - Error Handling: returns `01` for policy not found, `02` for timestamp mismatch (concurrent update), `90` for SQL errors; includes transaction rollback on failures and comprehensive cursor cleanup.
 - Notes: uses DB2 cursor with FOR UPDATE to lock policy records; validates last-changed timestamp to detect concurrent modifications; updates both main POLICY table and policy-type-specific tables; refreshes timestamp and synchronizes to VSAM on successful completion.
 
+## Simulation Control & Error Handling Assets
+### ONCICS.TXT – CICS Connection Manager  
+- Purpose: automated CICS terminal connection recovery and initialization for workload simulation sessions.
+- Interfaces: includes `#SSVARS.TXT` for shared variable definitions; monitors screen content for CICS availability indicator `DFHCE3547`.
+- Dependencies: workload simulator runtime, `<TORAPPL>` application context, shared `Found` variable from `#SSVARS`.
+- Flow Control: uses `onin0001` event handler to detect CICS readiness; suspends terminal for 5-second intervals until connection established; deactivates handler and transmits clear screen once connected.
+- Notes: essential bootstrap logic ensuring simulation terminals establish valid CICS session before executing transaction flows; referenced via `C#ONCICS` path in `GENAPP.TXT`.
+
+### STOP.TXT – Simulation Termination Handler
+- Purpose: graceful workload simulator termination with terminal cleanup and resource quiescing.
+- Interfaces: includes `#SSVARS.TXT` for environment variables; implements `STOP` message text block for simulator path definitions.
+- Dependencies: workload simulator runtime, shared variable context from `#SSVARS`.
+- Flow Control: outputs termination message and invokes `Quiesce` command to properly release terminal resources and end simulation session.
+- Notes: referenced as `Stop` path in `GENAPP.TXT`; called from transaction scripts (e.g., `SSC1A1.TXT`) to cleanly exit simulation flows.
+
+### WASERROR.TXT – Web Service Error Handler
+- Purpose: specialized error processing for CST SOAP application responses with HTTP status code parsing and application-level error extraction.
+- Interfaces: processes web service response data in variable `S5`; outputs diagnostic messages via `MSGTXTID()` function.
+- Dependencies: workload simulator string functions (`E2D`, `Substr`, `Pos`, `Char`), web service response parsing context.
+- Error Processing Logic: extracts HTTP status code from position 10-12 of response; handles HTTP 200 responses by parsing embedded `<ca_return_code>` XML elements; reports both HTTP-level and application-level error codes with descriptive messages.
+- Notes: included via `@Include WASerror` in web service simulation scripts; provides standardized error reporting for SOAP-based transaction testing.
+
+## CICS Event Processing & Monitoring Configuration
+### Transaction_Counters.evbind – Business Transaction Event Binding
+- Purpose: CICS Event Processing configuration that captures business transaction metrics and dispatches events to statistics collection program `LGASTAT1`.
+- Event Specification: defines `Count_business_trans` event with `Request_Type` (6-byte text) and `Return_code` (2-byte numeric) data fields.
+- Capture Configuration: monitors CICS LINK PROGRAM commands targeting programs with names starting with `LG`; captures commarea data at offsets 0-5 (request type) and 6-7 (return code).
+- Event Dispatcher: routes captured events to transaction `LGST` which invokes `LGASTAT1` program; uses CCE format for event data exchange; operates with normal priority and non-transactional event processing.
+- Integration Points: supports real-time monitoring of GenApp transaction flows (customer/policy operations); provides data feed for statistics dashboard via `LGWEBST5` program and shared TSQ structures.
+- Notes: critical monitoring infrastructure enabling transaction throughput measurement and application health tracking; coordinates with named counters (`GENA*` series) for comprehensive workload visibility.
+
 ## Immediate Findings & Questions
 - `install.sh` expects `tsocmd` and USS `cp` with dataset support; confirm environment prerequisites.
 - Customer experience assets hint at established monitoring and test flows; identify current owners.

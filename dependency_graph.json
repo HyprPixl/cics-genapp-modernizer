@@ -1,5 +1,10 @@
 {
   "nodes": {
+    "#SSVARS": {
+      "depends_on": [],
+      "description": "Workload simulator shared variable definitions and constants for transaction flows",
+      "type": "simulation"
+    },
     "DB2.COMMERCIAL": {
       "depends_on": [],
       "description": "Commercial policy extension",
@@ -34,6 +39,15 @@
       "depends_on": [],
       "description": "Core policy header table",
       "type": "db2-table"
+    },
+    "GENAPP.TXT": {
+      "depends_on": [
+        "#SSVARS",
+        "ONCICS",
+        "STOP"
+      ],
+      "description": "Main workload simulator configuration with transaction paths and connection management",
+      "type": "simulation"
     },
     "KSDSCUST": {
       "depends_on": [],
@@ -115,6 +129,11 @@
       "description": "VSAM writer for policy records",
       "type": "cobol"
     },
+    "LGASTAT1": {
+      "depends_on": [],
+      "description": null,
+      "type": null
+    },
     "LGCMAREA": {
       "depends_on": [],
       "description": "Shared commarea layout",
@@ -195,6 +214,13 @@
       "description": "Embedded SQL host variable definitions",
       "type": "sql-include"
     },
+    "LGST": {
+      "depends_on": [
+        "LGASTAT1"
+      ],
+      "description": "CICS transaction for event processing and statistics collection via LGASTAT1 program",
+      "type": "transaction"
+    },
     "LGSTSQ": {
       "depends_on": [],
       "description": "TDQ logger for diagnostics",
@@ -260,6 +286,38 @@
       ],
       "description": "Update policy VSAM service",
       "type": "cobol"
+    },
+    "LGWEBST5": {
+      "depends_on": [
+        "LGCMAREA"
+      ],
+      "description": "Web statistics collector that queries CICS counters and publishes metrics to TSQ",
+      "type": "cobol"
+    },
+    "ONCICS": {
+      "depends_on": [
+        "#SSVARS"
+      ],
+      "description": "CICS connection recovery and terminal initialization for workload simulation",
+      "type": "simulation"
+    },
+    "STOP": {
+      "depends_on": [],
+      "description": null,
+      "type": null
+    },
+    "Transaction_Counters.evbind": {
+      "depends_on": [
+        "LGASTAT1",
+        "LGST"
+      ],
+      "description": "CICS Event Processing configuration for business transaction monitoring and statistics collection",
+      "type": "monitoring"
+    },
+    "WASERROR": {
+      "depends_on": [],
+      "description": "Web service error handler for CST SOAP application responses",
+      "type": "simulation"
     }
   }
 }
