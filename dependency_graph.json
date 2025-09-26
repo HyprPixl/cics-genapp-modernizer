@@ -40,6 +40,13 @@
       "description": "VSAM cluster for customer summaries",
       "type": "vsam-file"
     },
+    "KSDSCUST.TXT": {
+      "depends_on": [
+        "LGCMAREA"
+      ],
+      "description": "Customer sample dataset: 10 test customer records, 225-byte fixed length, contains customer numbers, names, addresses, phone numbers, and email addresses",
+      "type": "data"
+    },
     "KSDSPOLY": {
       "depends_on": [],
       "description": "VSAM cluster for policy summaries",
@@ -76,6 +83,7 @@
     },
     "LGACVS01": {
       "depends_on": [
+        "KSDSCUST.TXT",
         "LGCMAREA",
         "LGSTSQ"
       ],
@@ -167,6 +175,13 @@
       "description": "Inquire customer front-end program",
       "type": "cobol"
     },
+    "LGICVS01": {
+      "depends_on": [
+        "KSDSCUST.TXT"
+      ],
+      "description": null,
+      "type": null
+    },
     "LGIPDB01": {
       "depends_on": [
         "DB2.COMMERCIAL",
@@ -223,6 +238,7 @@
     "LGUCVS01": {
       "depends_on": [
         "KSDSCUST",
+        "KSDSCUST.TXT",
         "LGCMAREA",
         "LGSTSQ"
       ],

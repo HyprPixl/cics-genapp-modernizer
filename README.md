@@ -147,6 +147,49 @@
 - Need to verify whether source members align with current CICS region configuration.
 - Images folder currently holds `initial_topology.jpg`; consider exporting architecture notes from there.
 
+## Sample Test Data Documentation
+
+### KSDSCUST.TXT – Customer Test Dataset
+- **Purpose**: Sample customer records for testing VSAM KSDS operations via programs like `LGACVS01`, `LGUCVS01`, and `LGICVS01`.
+- **Format**: Fixed-length records, 225 bytes per record (consistent with `CUSTOMER-RECORD-SIZE` in COBOL).
+- **Record Count**: 10 test customer records (customers 0000000001 through 0000000010, complete sequence; file missing final newline).
+- **Key Structure**: 10-byte customer number (positions 1-10), zero-padded.
+- **Field Layout** (based on `LGCMAREA` copybook structure):
+  - Customer Number: positions 1-10 (PIC 9(10))
+  - First Name: positions 11-20 (PIC X(10))
+  - Last Name: positions 21-40 (PIC X(20))
+  - Date of Birth: positions 41-50 (PIC X(10), format YYYY-MM-DD)
+  - House Name: positions 51-70 (PIC X(20))
+  - House Number: positions 71-74 (PIC X(4))
+  - Postcode: positions 75-82 (PIC X(8))
+  - Number of Policies: positions 83-85 (PIC 9(3))
+  - Mobile Phone: positions 86-105 (PIC X(20))
+  - Home Phone: positions 106-125 (PIC X(20))
+  - Email Address: positions 126-225 (PIC X(100))
+- **Dependencies**: Corresponds to `CA-CUSTOMER-REQUEST` structure in `LGCMAREA` copybook; used by customer VSAM programs.
+- **Test Coverage**: Includes varied customer profiles (ages from 1934-1969 births), diverse address formats (postcodes like "PI101O", "TB14TV"), mixed phone number combinations, and email addresses from different domains.
+
+### KSDSPOLY.TXT – Policy Test Dataset
+- **Purpose**: Sample policy records for testing VSAM KSDS operations via programs like `LGAPVS01`, `LGUPVS01`, `LGDPVS01`, and `LGIPVS01`.
+- **Format**: Fixed-length records, 64 bytes per record (consistent with policy VSAM file definitions).
+- **Record Count**: 10 test policy records covering all four policy types.
+- **Key Structure**: 21-byte composite key (positions 1-21):
+  - Policy Type ID: position 1 (C/E/H/M for Commercial/Endowment/House/Motor)
+  - Customer Number: positions 2-11 (PIC 9(10), zero-padded)
+  - Policy Number: positions 12-21 (PIC 9(10), zero-padded)
+- **Policy Type Distribution**:
+  - **Commercial** (C): 2 policies (customers 1, 5)
+  - **Endowment** (E): 2 policies (customers 3, 8)
+  - **House** (H): 3 policies (customers 4, 6, 9)
+  - **Motor** (M): 3 policies (customers 2, 5, 10)
+- **Field Layout Examples** (positions 22-64, type-specific):
+  - **Commercial** (C): Examples include "IBM" and "Clarets Merchandise" business names with postcodes and status indicators
+  - **Endowment** (E): Life assured names like "Shep" and "J. MORRIS" with fund management flags (Y/N indicators for profits, equities)
+  - **House** (H): Property types (HOUSE/FARM/FLAT), bedroom counts (5/0/1), values (£150K-£375K), postcodes (SO211UP, SO529ED, E15WW)
+  - **Motor** (M): Vehicle makes (FORD/DENNIS/VOLKSWAGEN), models (KA/ENGINE/BEETLE), values (£600-£85K), registrations (LL60LOO, FIRE1, A567WWR)
+- **Dependencies**: Corresponds to `WF-Policy-Info` structure in VSAM programs; matches policy-specific sections in `LGCMAREA`.
+- **Test Coverage**: Provides comprehensive examples of each policy type with realistic UK-specific data (postcodes, registration numbers, property values).
+
 ## Next Steps
 - Inventory high-priority COBOL transactions first (e.g., customer inquiry vs policy update paths).
 - Decide documentation template for program deep-dives; store drafts alongside `AGENTS.md` notes.

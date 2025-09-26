@@ -23,6 +23,7 @@
 - **Phase 2 Database Service Dependencies:** All database backend services (`*DB01`) depend on DB2 tables, corresponding VSAM sync services (`*VS01`), shared copybooks (`LGCMAREA`, `LGPOLICY`), and error logging (`LGSTSQ`).
 - **Database-VSAM Synchronization Pattern:** Policy services sync to `KSDSPOLY`, customer services sync to `KSDSCUST`; all VSAM services depend on `LGCMAREA` and `LGSTSQ`.
 - **Customer Security Integration:** `LGACDB01` coordinates with `LGACDB02` for secure credential management in `CUSTOMER_SECURE` table.
+- **Sample Data Integration:** `KSDSCUST.TXT` provides 10 test customer records (225-byte fixed format) for VSAM programs; `KSDSPOLY.TXT` provides 10 policy records (64-byte fixed format) across 4 policy types (C/E/H/M) for policy VSAM operations.
 
 ## Tooling
 - Dependency graph helper lives at `tools/dep_graph.py`; default store is `dependency_graph.json`.
@@ -50,7 +51,7 @@
   - **Phase 4 Task 6:** Document REXX automation (`CUST1.REXX`, `MAC1.REXX`) - operational scripts
   - **Phase 4 Task 7:** Document installation automation (`install.sh`) - deployment and setup processes
 - **Phase 5 – Data & Simulation (parallel):** In parallel with ops review, analyze test data and simulation assets.
-  - **Phase 5 Task 1:** Document sample datasets (`KSDSCUST.TXT`, `KSDSPOLY.TXT`) - customer and policy test data
+- **Phase 5 Task 1 COMPLETE:** Documented sample datasets (`KSDSCUST.TXT`, `KSDSPOLY.TXT`) - customer and policy test data with detailed field layouts, record structures, and data relationships.
   - **Phase 5 Task 2:** Document simulation configuration (`GENAPP.TXT`, `#SSVARS.TXT`) - workload simulator setup
   - **Phase 5 Task 3:** Document transaction simulation scripts (`SSC1*`, `SSP1*`, `SSP2*`, `SSP3*`, `SSP4*`) - individual transaction flows
   - **Phase 5 Task 4:** Document web service simulation (`WSC1*`, `WSLGCF`) - web interface test scenarios
