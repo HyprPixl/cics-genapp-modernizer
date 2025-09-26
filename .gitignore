@@ -4,3 +4,4 @@ base/.DS_Store
 # Generated visualization files
 *.png
 !base/images/*.png
+!visualizations/*.png
