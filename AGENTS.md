@@ -23,6 +23,7 @@
 - **Phase 2 Database Service Dependencies:** All database backend services (`*DB01`) depend on DB2 tables, corresponding VSAM sync services (`*VS01`), shared copybooks (`LGCMAREA`, `LGPOLICY`), and error logging (`LGSTSQ`).
 - **Database-VSAM Synchronization Pattern:** Policy services sync to `KSDSPOLY`, customer services sync to `KSDSCUST`; all VSAM services depend on `LGCMAREA` and `LGSTSQ`.
 - **Customer Security Integration:** `LGACDB01` coordinates with `LGACDB02` for secure credential management in `CUSTOMER_SECURE` table.
+- **Web Service Interface Copybooks:** `POLLOOK` and `POLLOO2` provide request/response structures for web service generation via DFHLS2WS; used in mobile policy inquiry interfaces with structured data exchange supporting up to 5 policies per response.
 
 ## Tooling
 - Dependency graph helper lives at `tools/dep_graph.py`; default store is `dependency_graph.json`.
@@ -37,7 +38,7 @@
 - **Phase 2 – Data Services (serial):** Document batch/database utilities (`LGAPDB01`, `LGDPDB01`, `LGIPDB01`, `LGUCDB01`) and shared logging (`LGSTSQ`) once their callers are understood.
 - **Phase 3 – Shared Assets (parallel):** Tackle copybooks and BMS maps alongside transaction work; these can be owned by separate teammates with ongoing updates.
   - **Phase 3 Task 1:** Document core copybooks (`LGCMAREA`, `LGPOLICY`) - shared data structures
-  - **Phase 3 Task 2:** Document lookup copybooks (`POLLOOK`, `POLLOO2`) - reference data structures  
+  - **Phase 3 Task 2:** Document lookup copybooks (`POLLOOK`, `POLLOO2`) - reference data structures  ✓  
   - **Phase 3 Task 3:** Document SOA interface copybooks (`SOAIC01`, `SOAIPB1`, `SOAIPE1`, `SOAIPH1`, `SOAIPM1`) - service interfaces
   - **Phase 3 Task 4:** Document SOA data copybooks (`SOAVCII`, `SOAVCIO`, `SOAVPII`, `SOAVPIO`) - service data exchange
   - **Phase 3 Task 5:** Document BMS maps (`SSMAP.bms`) - screen layouts and field definitions
