@@ -58,28 +58,6 @@ The dependency graph tool now includes comprehensive visualization features:
 ![COBOL Programs Dependency Graph](visualizations/cobol_programs.png)
 *COBOL programs (19 nodes) showing program relationships*
 
-### Database Schema
-![Database Schema](visualizations/database_schema.png)
-*Database schema visualization (7 tables)*
-
-### Shared Copybook Structures
-![Copybooks](visualizations/copybooks.png)
-*Shared copybook structures (3 components)*
-
-### VSAM Files
-![VSAM Files](visualizations/vsam_files.png)
-*VSAM dataset relationships (2 files)*
-
-### Operational Components
-![REXX Components](visualizations/rexx_components.png)
-*REXX script relationships*
-
-![JCL Components](visualizations/jcl_components.png)
-*JCL procedures*
-
-![Shell Components](visualizations/shell_components.png)
-*Shell script dependencies*
-
 **Graph Statistics:**
 - **Total Components:** 43 nodes across 14 different types
 - **Dependencies:** 89 directed relationships 
