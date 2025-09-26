@@ -1,38 +1,123 @@
-# Agent Log
+# Agent Coordination Hub
 
-## Progress Log
-- Documented `LGAPOL01` (Add Policy COBOL program) and captured dependencies in the README and dependency graph store.
-- Drafted documentation roadmap with sequencing and parallel work suggestions.
-- Reviewed and documented `LGAPVS01` and `LGAPDB01`, noting VSAM and DB2 responsibilities plus shared error pathways.
+This file coordinates multiple parallel workstreams for documenting and modernizing the CICS GenApp system.
+
+## Mainline Development Tasks
+
+### Current Active Work
 - **PHASE 1 COMPLETE:** Documented all core transaction front-end programs and their immediate dependencies:
   - Customer operations: `LGACUS01` (add), `LGICUS01` (inquire), `LGUCUS01` (update) with backing services `LGACDB01`, `LGACVS01`
   - Policy operations: `LGAPOL01` (add), `LGIPOL01` (inquire), `LGUPOL01` (update), `LGDPOL01` (delete) with backing services `LGAPDB01`, `LGAPVS01`
   - All front-end programs follow consistent patterns: commarea validation, request ID checking, backend delegation, error logging via `LGSTSQ`
 
+### Next Milestones
+- [ ] **Phase 2 - Data Services:** Document backend DB modules (`LGAPDB01`, `LGDPDB01`, `LGIPDB01`, `LGUCDB01`) and shared logging (`LGSTSQ`)
+- [ ] **Phase 3 - Integration Testing:** Validate documented transaction flows end-to-end
+- [ ] **Phase 4 - Modernization Planning:** Define API interfaces and refactoring opportunities
+
+## Full Documentation Branch Tasks
+
+### Dependency Analysis & Visualization
+- [x] Created dependency graph visualization tool (`tools/visualize_dependencies.py`)
+- [x] Generated current state visualization (`tools/dependency_graph_current_state.png`)
+- [x] Identified documentation priorities based on dependency analysis
+
+### Documentation Start Recommendation
+
+**IMMEDIATE ACTION:** Begin full inline documentation with these components in this order:
+
+1. **Start Here - Foundation Components** (Can be done in parallel):
+   - `LGCMAREA` copybook - 11 dependents make this the highest impact starting point
+   - `LGSTSQ` COBOL program - Central logging used by all transaction programs
+
+2. **Next - Core Integrators** (Serial dependency - do in order):
+   - `LGAPDB01` - Most complex component with 9 dependencies, policy creation orchestrator
+   - `LGACDB01` - Customer domain integration point with 4 dependencies
+
+3. **Then - Transaction Layer** (Can parallelize after backends documented):
+   - All front-end programs following the established patterns
+   - These can be documented in parallel streams once foundation is solid
+
+**Rationale:** The dependency analysis shows LGCMAREA and LGSTSQ are architectural foundations that everything else builds upon. Starting here provides the most leverage and unblocks all other documentation work.
+
+### Documentation Priority Recommendations
+
+Based on dependency graph analysis (26 nodes, 39 edges):
+
+#### High Impact Foundation Components (Document First)
+1. **LGCMAREA** (copybook): 11 dependents - Shared commarea layout
+   - *Critical:* Used by all transaction programs for communication
+2. **LGSTSQ** (cobol): 11 dependents - TDQ logger for diagnostics  
+   - *Critical:* Central logging facility used throughout system
+
+#### Core Backend Services (Document Next)
+3. **LGAPDB01** (cobol): Complex component with 9 dependencies - DB2-backed policy add service
+   - *Key integration point:* Orchestrates policy creation across multiple DB2 tables
+4. **LGACDB01** (cobol): 4 dependencies - Add customer DB2 backend service
+   - *Customer domain leader:* Handles customer data persistence
+
+### Parallel Documentation Streams
+
+#### Stream A: Shared Assets (Can work independently)
+- [ ] **Copybooks:** `LGCMAREA`, `POLLOOK`, `POLLOO2`, `SOA*` structures
+- [ ] **BMS Maps:** `SSMAP.bms` screen definitions and field mappings
+- [ ] **SQL Includes:** `LGPOLICY` host variable definitions
+
+#### Stream B: Operations & Automation (Can work independently)
+- [ ] **JCL Inventory:** Map every member in `base/cntl/` to compile/deploy functions
+- [ ] **REXX Automation:** Document `base/exec/` scripts and their trigger points
+- [ ] **Deployment:** Analyze `install.sh` dataset allocation and upload process
+
+#### Stream C: Data & Simulation (Can work independently)
+- [ ] **Test Data:** Document `base/data/` sample datasets and their relationships
+- [ ] **Simulation Flows:** Map `base/wsim/` workstation simulator scenarios
+- [ ] **Customer Journeys:** Trace complete business processes through the system
+
+## Progress History
+
+### Recent Achievements
+- Documented `LGAPOL01` (Add Policy COBOL program) and captured dependencies in the README and dependency graph store
+- Drafted documentation roadmap with sequencing and parallel work suggestions
+- Reviewed and documented `LGAPVS01` and `LGAPDB01`, noting VSAM and DB2 responsibilities plus shared error pathways
+- Created comprehensive dependency visualization and analysis tools
+
 ## Dependency Notes
-- `LGAPOL01` depends on `LGAPDB01` (database insert logic), `LGSTSQ` (TDQ logging helper), and the `LGCMAREA` copybook.
-- `LGAPVS01` writes to VSAM cluster `KSDSPOLY`, consumes `LGCMAREA`, and logs via `LGSTSQ`.
-- `LGAPDB01` relies on DB2 tables (`POLICY`, `ENDOWMENT`, `HOUSE`, `MOTOR`, `COMMERCIAL`), invokes `LGAPVS01`, and uses `LGPOLICY`/`LGCMAREA` copybooks plus `LGSTSQ` for diagnostics.
-- Customer front-ends (`LGACUS01`, `LGICUS01`, `LGUCUS01`) all depend on corresponding DB backends (`LGACDB01`, `LGICDB01`, `LGUCDB01`) and shared infrastructure (`LGSTSQ`, `LGCMAREA`).
-- Policy front-ends (`LGAPOL01`, `LGIPOL01`, `LGUPOL01`, `LGDPOL01`) follow similar patterns with DB backends (`LGAPDB01`, `LGIPDB01`, `LGUPDB01`, `LGDPDB01`).
-- All transaction programs share error logging through `LGSTSQ` and use `LGCMAREA` for consistent commarea structure.
+
+### Key Relationships
+- `LGAPOL01` depends on `LGAPDB01` (database insert logic), `LGSTSQ` (TDQ logging helper), and the `LGCMAREA` copybook
+- `LGAPVS01` writes to VSAM cluster `KSDSPOLY`, consumes `LGCMAREA`, and logs via `LGSTSQ`
+- `LGAPDB01` relies on DB2 tables (`POLICY`, `ENDOWMENT`, `HOUSE`, `MOTOR`, `COMMERCIAL`), invokes `LGAPVS01`, and uses `LGPOLICY`/`LGCMAREA` copybooks plus `LGSTSQ` for diagnostics
+- Customer front-ends (`LGACUS01`, `LGICUS01`, `LGUCUS01`) all depend on corresponding DB backends (`LGACDB01`, `LGICDB01`, `LGUCDB01`) and shared infrastructure (`LGSTSQ`, `LGCMAREA`)
+- Policy front-ends (`LGAPOL01`, `LGIPOL01`, `LGUPOL01`, `LGDPOL01`) follow similar patterns with DB backends (`LGAPDB01`, `LGIPDB01`, `LGUPDB01`, `LGDPDB01`)
+- All transaction programs share error logging through `LGSTSQ` and use `LGCMAREA` for consistent commarea structure
 
 ## Tooling
-- Dependency graph helper lives at `tools/dep_graph.py`; default store is `dependency_graph.json`.
-- Add/update a node: `./tools/dep_graph.py add-node <NAME> --type <category> --description "..." --depends-on dep1 dep2`.
-- Create an edge later: `./tools/dep_graph.py add-edge <SOURCE> <TARGET>`.
-- Inspect a node: `./tools/dep_graph.py show <NAME> --include-dependents`.
-- List nodes (optionally by type): `./tools/dep_graph.py list --type cobol`.
-- Review dependents of a component: `./tools/dep_graph.py dependents <NAME>`.
 
-## Work Sequencing
-- **Phase 1 – Core Transactions (serial):** Continue through customer and policy front-end programs (`LGAPOL01`, `LGAPVS01`, `LGACUS01`, etc.), pairing each with its backing DB module so request/response flows stay consistent.
-- **Phase 2 – Data Services (serial):** Document batch/database utilities (`LGAPDB01`, `LGDPDB01`, `LGIPDB01`, `LGUCDB01`) and shared logging (`LGSTSQ`) once their callers are understood.
-- **Phase 3 – Shared Assets (parallel):** Tackle copybooks (`LGCMAREA`, `POLLOOK`, `POLLOO2`, `SOA*`) and BMS maps (`SSMAP.bms`) alongside transaction work; these can be owned by a separate teammate with ongoing updates.
-- **Phase 4 – Ops & Automation (parallel):** While COBOL review continues, another stream can inventory JCL in `base/cntl/`, REXX execs, and `install.sh`, cross-linking jobs to program compile/deploy steps.
-- **Phase 5 – Data & Simulation (parallel):** In parallel with ops review, analyze `base/data/` datasets and `base/wsim/` scripts, documenting how they support test scenarios and customer journeys.
+### Dependency Graph Management
+- **Core tool:** `tools/dep_graph.py` (CLI for managing `dependency_graph.json`)
+- **Visualization:** `tools/visualize_dependencies.py` (generates current state diagrams)
+- **Usage examples:**
+  - Add/update a node: `./tools/dep_graph.py add-node <NAME> --type <category> --description "..." --depends-on dep1 dep2`
+  - Create an edge later: `./tools/dep_graph.py add-edge <SOURCE> <TARGET>`
+  - Inspect a node: `./tools/dep_graph.py show <NAME> --include-dependents`
+  - List nodes by type: `./tools/dep_graph.py list --type cobol`
+  - Generate visualization: `python3 tools/visualize_dependencies.py --stats --suggestions`
 
-## Parallelization Notes
-- Pair front-end and back-end COBOL modules in the same lane to avoid re-reading shared commareas.
-- Assign separate owners for shared copybooks/maps and for infrastructure artifacts (JCL/REXX/data) so updates proceed without blocking the core transaction walkthrough.
-- Revisit the dependency graph after each phase to confirm cross-stream updates stay synchronized.
+## Coordination Guidelines
+
+### For Mainline Development
+- Focus on serial progression through transaction programs
+- Pair front-end and back-end modules in same development cycle
+- Update dependency graph as new relationships are discovered
+- Coordinate with parallel streams for shared component updates
+
+### For Full Documentation Branch
+- Work can proceed in parallel across the three streams (A, B, C)
+- Shared components (Stream A) should be documented early to support other streams
+- Cross-reference findings with the mainline development discoveries
+- Regular sync points to ensure consistency across workstreams
+
+### Communication
+- Update this file with progress on each stream
+- Use dependency graph to track impact of changes
+- Document any architectural insights that affect multiple streams
