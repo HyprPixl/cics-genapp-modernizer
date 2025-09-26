@@ -141,6 +141,31 @@
 - Error Handling: returns `01` for policy not found, `02` for timestamp mismatch (concurrent update), `90` for SQL errors; includes transaction rollback on failures and comprehensive cursor cleanup.
 - Notes: uses DB2 cursor with FOR UPDATE to lock policy records; validates last-changed timestamp to detect concurrent modifications; updates both main POLICY table and policy-type-specific tables; refreshes timestamp and synchronizes to VSAM on successful completion.
 
+## Shared Copybooks – SOA Data Exchange
+### SOAVCII – Customer Web Service Input Commarea
+- Purpose: defines request structure for customer inquiry web services via LGICVS01; provides standardized 82-byte commarea layout for CICS Language Structure to WSDL (LS2WS) conversion.
+- Structure: single-level layout with `Customer-Number` (Pic X(10)) for customer identifier lookup and `Filler` (Pic X(72)) for future expansion.
+- Integration: referenced as `REQMEM=SOAVCII` in `wsavc01.jcl` for generating WSDL and WSBIND artifacts for GENAPP/LGICVS01 web service endpoint.
+- Dependencies: used by `LGICVS01` VSAM inquiry service, CICS LS2WS utility (DFHLS2WS), web service generation JCL.
+
+### SOAVCIO – Customer Web Service Output Commarea  
+- Purpose: defines response structure for customer inquiry web services via LGICVS01; standardizes customer data exchange format for SOA integration.
+- Structure: hierarchical layout with `Comma-Data-Text` (Pic X(14)) for result messages, `Comma-Data-High` (Pic X(10)) for customer identifier echo, and `FILLER` (Pic X(48)) for alignment.
+- Integration: referenced as `RESPMEM=SOAVCIO` in `wsavc01.jcl` for web service response schema generation; complements SOAVCII input structure.
+- Dependencies: used by `LGICVS01` VSAM inquiry service, paired with SOAVCII for complete request/response cycle, CICS web service infrastructure.
+
+### SOAVPII – Policy Validation Web Service Input Commarea
+- Purpose: defines request structure for policy validation web services via LGIPVS01; enables policy number validation and lookup through standardized commarea format.
+- Structure: focused layout with `Type` (Pic X) for policy type discriminator, `Cust-Num` (Pic 9(10)) for customer identifier, and `FILLER` (Pic X(79)) for 82-byte total alignment.
+- Integration: referenced as `REQMEM=SOAVPII` in `wsavp01.jcl` for generating WSDL schema for GENAPP/LGIPVS01 web service; supports policy type validation (C/E/H/M).
+- Dependencies: used by `LGIPVS01` VSAM policy service, CICS LS2WS conversion utility, policy validation web service endpoint.
+
+### SOAVPIO – Policy Validation Web Service Output Commarea
+- Purpose: defines response structure for policy validation web services via LGIPVS01; returns comprehensive policy identification data for validated policies.
+- Structure: hierarchical design with `Comma-Data-Text` (Pic X(11)) for validation messages, nested `Comma-Data-Key` containing `Type` (Pic X), `Cust-Num` (Pic 9(10)), `Pol-Num` (Pic 9(10)) for complete policy identification, and `FILLER` (Pic X(48)) for padding.
+- Integration: referenced as `RESPMEM=SOAVPIO` in `wsavp01.jcl` for web service response generation; provides complete policy key structure for downstream processing.
+- Dependencies: used by `LGIPVS01` VSAM policy service, paired with SOAVPII for input/output cycle, CICS SOA infrastructure, policy management web services.
+
 ## Immediate Findings & Questions
 - `install.sh` expects `tsocmd` and USS `cp` with dataset support; confirm environment prerequisites.
 - Customer experience assets hint at established monitoring and test flows; identify current owners.

@@ -169,7 +169,6 @@
     },
     "LGICVS01": {
       "depends_on": [
-        "KSDSCUST",
         "SOAVCII",
         "SOAVCIO"
       ],
@@ -197,11 +196,6 @@
         "LGSTSQ"
       ],
       "description": "Inquire policy front-end program",
-      "type": "cobol"
-    },
-    "LGIPVS01": {
-      "depends_on": [],
-      "description": "Policy VSAM inquiry service for web services - validates and retrieves policy data from KSDSPOLY cluster for SOA integration",
       "type": "cobol"
     },
     "LGPOLICY": {
@@ -277,8 +271,8 @@
     },
     "SOAVCII": {
       "depends_on": [],
-      "description": "Customer inquiry web service input commarea - defines request structure for LGICVS01 VSAM customer lookups via CICS web services",
-      "type": "copybook"
+      "description": null,
+      "type": null
     },
     "SOAVCIO": {
       "depends_on": [],
@@ -296,6 +290,4 @@
       "type": "copybook"
     }
   }
-}
- }
 }
