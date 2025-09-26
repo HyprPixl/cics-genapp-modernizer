@@ -44,10 +44,24 @@
       "depends_on": [
         "ONCICS",
         "SSC1A1",
+        "SSC1I1",
         "SSP1A1",
+        "SSP1D1",
+        "SSP1I1",
+        "SSP1U1",
         "SSP2A1",
+        "SSP2D1",
+        "SSP2I1",
+        "SSP2U1",
         "SSP3A1",
-        "SSP4A1"
+        "SSP3D1",
+        "SSP3I1",
+        "SSP3U1",
+        "SSP4A1",
+        "SSP4D1",
+        "SSP4I1",
+        "WSC1A1",
+        "WSC1I1"
       ],
       "description": "Main workload simulator configuration file defining network settings, transaction paths, and simulation parameters",
       "type": "simulation-config"
@@ -292,11 +306,39 @@
       "description": "Customer add simulation script",
       "type": "simulation-script"
     },
+    "SSC1I1": {
+      "depends_on": [
+        "#SSVARS.TXT"
+      ],
+      "description": "Customer inquiry simulation script",
+      "type": "simulation-script"
+    },
     "SSP1A1": {
       "depends_on": [
         "#SSVARS.TXT"
       ],
       "description": "Policy add simulation script (Type 1)",
+      "type": "simulation-script"
+    },
+    "SSP1D1": {
+      "depends_on": [
+        "#SSVARS.TXT"
+      ],
+      "description": "Policy delete simulation script (Type 1)",
+      "type": "simulation-script"
+    },
+    "SSP1I1": {
+      "depends_on": [
+        "#SSVARS.TXT"
+      ],
+      "description": "Policy inquire simulation script (Type 1)",
+      "type": "simulation-script"
+    },
+    "SSP1U1": {
+      "depends_on": [
+        "#SSVARS.TXT"
+      ],
+      "description": "Policy update simulation script (Type 1)",
       "type": "simulation-script"
     },
     "SSP2A1": {
@@ -306,11 +348,53 @@
       "description": "Life policy add simulation script (Type 2)",
       "type": "simulation-script"
     },
+    "SSP2D1": {
+      "depends_on": [
+        "#SSVARS.TXT"
+      ],
+      "description": "Life policy delete simulation script (Type 2)",
+      "type": "simulation-script"
+    },
+    "SSP2I1": {
+      "depends_on": [
+        "#SSVARS.TXT"
+      ],
+      "description": "Life policy inquire simulation script (Type 2)",
+      "type": "simulation-script"
+    },
+    "SSP2U1": {
+      "depends_on": [
+        "#SSVARS.TXT"
+      ],
+      "description": "Life policy update simulation script (Type 2)",
+      "type": "simulation-script"
+    },
     "SSP3A1": {
       "depends_on": [
         "#SSVARS.TXT"
       ],
       "description": "House policy add simulation script (Type 3)",
+      "type": "simulation-script"
+    },
+    "SSP3D1": {
+      "depends_on": [
+        "#SSVARS.TXT"
+      ],
+      "description": "House policy delete simulation script (Type 3)",
+      "type": "simulation-script"
+    },
+    "SSP3I1": {
+      "depends_on": [
+        "#SSVARS.TXT"
+      ],
+      "description": "House policy inquire simulation script (Type 3)",
+      "type": "simulation-script"
+    },
+    "SSP3U1": {
+      "depends_on": [
+        "#SSVARS.TXT"
+      ],
+      "description": "House policy update simulation script (Type 3)",
       "type": "simulation-script"
     },
     "SSP4A1": {
@@ -320,11 +404,39 @@
       "description": "Commercial policy add simulation script (Type 4)",
       "type": "simulation-script"
     },
+    "SSP4D1": {
+      "depends_on": [
+        "#SSVARS.TXT"
+      ],
+      "description": "Commercial policy delete simulation script (Type 4)",
+      "type": "simulation-script"
+    },
+    "SSP4I1": {
+      "depends_on": [
+        "#SSVARS.TXT"
+      ],
+      "description": "Commercial policy inquire simulation script (Type 4)",
+      "type": "simulation-script"
+    },
     "STOP": {
       "depends_on": [
         "#SSVARS.TXT"
       ],
       "description": "Terminal quiesce and shutdown script",
+      "type": "simulation-script"
+    },
+    "WSC1A1": {
+      "depends_on": [
+        "#SSVARS.TXT"
+      ],
+      "description": "Web service customer add simulation script",
+      "type": "simulation-script"
+    },
+    "WSC1I1": {
+      "depends_on": [
+        "#SSVARS.TXT"
+      ],
+      "description": "Web service customer inquiry simulation script",
       "type": "simulation-script"
     }
   }
