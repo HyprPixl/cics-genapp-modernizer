@@ -1,8 +1,5 @@
-      ******************************************************************
       *                                                                *
       * (C) Copyright IBM Corp. 2011, 2020                             *
-      *                                                                *
-      ******************************************************************
        IDENTIFICATION DIVISION.
        PROGRAM-ID. LGASTAT1.
        ENVIRONMENT DIVISION.
@@ -42,7 +39,6 @@
          03 Filler                     Pic X(4) Value '    '.
        01  Trancount                   Pic S9(8) COMP.
 
-      *
        01  WS-COMMAREA-LENGTHS.
            03 WS-CA-HEADER-LEN         PIC S9(4) COMP VALUE +18.
            03 WS-REQUIRED-CA-LEN       PIC S9(4)      VALUE +0.
@@ -53,11 +49,8 @@
        77  STSQ-name                   PIC X(8)  Value 'STEWSTEW'.
        77  GENAOTHER                   PIC X(9)  Value 'GENAOTHER'.
 
-      ******************************************************************
       *    L I N K A G E     S E C T I O N
-      ******************************************************************
        LINKAGE SECTION.
-      *
        01  DFHCOMMAREA.
              COPY LGCMAREA.
 
@@ -80,12 +73,10 @@
                          Into(WS-Data-Req)
                          Resp(WS-RESP)
            End-Exec.
-      *
            Exec CICS Get Container(WS-CHANname2)
                          Into(WS-Data-RC)
                          Resp(WS-RESP)
            End-Exec.
-      *
            If WS-RESP = DFHRESP(NORMAL)
              Move WS-Data-REQ  To  GENACounter
              Move WS-Data-RC   To  GENAType
@@ -97,7 +88,6 @@
                Move CA-RETURN-CODE To GENAtype
              End-if
            End-if.
-      *
            Exec Cics ReadQ TS Queue(WS-Qname)
                      Into(WS-Qarea)
                      Length(Length of WS-Qarea)
@@ -118,7 +108,6 @@
                        Resp(WS-RESP)
              End-Exec
            End-if
-      *
            If GENAcounter = '02ACUS'
                                      Move '01ACUS' to GENAcounter.
            If GENAcounter = '02ICOM' or

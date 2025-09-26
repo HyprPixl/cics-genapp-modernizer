@@ -1,12 +1,6 @@
-      ******************************************************************
-      *                                                                *
-      * (C) Copyright IBM Corp. 2011, 2020                             *
-      *                                                                *
       *                    Customer menu                               *
       *                                                                *
       * Menu for Customer transactions                                 *
-      *                                                                *
-      ******************************************************************
        IDENTIFICATION DIVISION.
        PROGRAM-ID. LGTESTC1.
        ENVIRONMENT DIVISION.
@@ -23,9 +17,7 @@
        01  FILLER REDEFINES Read-MSG.
          03 FILLER                   PIC X(14).
          03 READ-CUST-HIGH           PIC 9(10).
-      ******************************
        01  WS-Cust-High              Pic S9(10).
-      ******************************
 
        01  WRITE-MSG.
          03 WRITE-MSG-E            PIC X(20) Value '**** GENAPP CNTL'.
@@ -60,7 +52,6 @@
            Initialize COMM-AREA.
            MOVE '0000000000'   To ENT1CNOO
 
-      * Display Main Menu
            EXEC CICS SEND MAP ('SSMAPC1')
                      FROM(SSMAPC1O)
                      MAPSET ('SSMAP')
@@ -315,7 +306,6 @@
                  End-If
               End-Perform
            End-If.
-      *
       *
            If WS-FLAG-TSQH = 'Y'
              EXEC CICS WRITEQ TS QUEUE(STSQ-NAME)

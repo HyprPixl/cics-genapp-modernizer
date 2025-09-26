@@ -1,16 +1,10 @@
-      ******************************************************************
-      *                                                                *
       * (C) Copyright IBM Corp. 2011, 2020                             *
-      *                                                                *
-      * By default queue name of GENAERRS is used if                   *
       *  parm Q=nnnn is passed then Queue name GENAnnnn is used        *
       *                                                                *
-      ******************************************************************
        IDENTIFICATION DIVISION.
        PROGRAM-ID. LGSTSQ.
        ENVIRONMENT DIVISION.
        CONFIGURATION SECTION.
-      *
        DATA DIVISION.
        WORKING-STORAGE SECTION.
 
@@ -40,15 +34,12 @@
        77 STDQ-NAME                  PIC X(4)  VALUE 'CSMT'.
 
       *****************************************************************
-      *    L I N K A G E     S E C T I O N
-      *****************************************************************
        LINKAGE SECTION.
       * Delete policy commarea description
        01  DFHCOMMAREA.
          02  COMMA-DATA              PIC X(90).
 
       *----------------------------------------------------------------*
-      *****************************************************************
        PROCEDURE DIVISION.
 
       *---------------------------------------------------------------*
@@ -90,7 +81,6 @@
            ADD 5 TO WS-RECV-LEN.
 
       * Write output message to TDQ CSMT
-      *
            EXEC CICS WRITEQ TD QUEUE(STDQ-NAME)
                      FROM(WRITE-MSG)
                      RESP(WS-RESP)
@@ -100,7 +90,6 @@
 
       * Write output message to Genapp TSQ
       * If no space is available then the task will not wait for
-      *  storage to become available but will ignore the request...
       *
            EXEC CICS WRITEQ TS QUEUE(STSQ-NAME)
                      FROM(WRITE-MSG)

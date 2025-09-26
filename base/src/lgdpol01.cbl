@@ -1,12 +1,6 @@
       ******************************************************************
       *                                                                *
-      * (C) Copyright IBM Corp. 2011, 2020                             *
-      *                                                                *
       *                    DELETE Policy                               *
-      *                                                                *
-      *  Delete policy business logic                                  *
-      *                                                                *
-      ******************************************************************
        IDENTIFICATION DIVISION.
        PROGRAM-ID. LGDPOL01.
        ENVIRONMENT DIVISION.
@@ -18,8 +12,6 @@
 
       *----------------------------------------------------------------*
       * Common defintions                                              *
-      *----------------------------------------------------------------*
-      * Run time (debug) infomation for this invocation
         01  WS-HEADER.
            03 WS-EYECATCHER            PIC X(16)
                                         VALUE 'LGDPOL01------WS'.
@@ -30,12 +22,10 @@
            03 WS-ADDR-DFHCOMMAREA      USAGE is POINTER.
            03 WS-CALEN                 PIC S9(4) COMP.
 
-      * Variables for time/date processing
        01  WS-ABSTIME                  PIC S9(8) COMP VALUE +0.
        01  WS-TIME                     PIC X(8)  VALUE SPACES.
        01  WS-DATE                     PIC X(10) VALUE SPACES.
 
-      * Error Message structure
        01  ERROR-MSG.
            03 EM-DATE                  PIC X(8)  VALUE SPACES.
            03 FILLER                   PIC X     VALUE SPACES.
@@ -48,7 +38,6 @@
            03 CA-DATA                  PIC X(90) VALUE SPACES.
       *----------------------------------------------------------------*
 
-      *----------------------------------------------------------------*
       * Definitions required for data manipulation                     *
       *----------------------------------------------------------------*
       * Fields to be used to calculate minimum commarea length required
@@ -63,13 +52,10 @@
       *    L I N K A G E     S E C T I O N
       ******************************************************************
        LINKAGE SECTION.
-      * Delete policy commarea description
-      * Need to allow for max CICS commarea size of 32500 bytes
        01  DFHCOMMAREA.
              COPY LGCMAREA.
 
 
-      ******************************************************************
       *    P R O C E D U R E S
       ******************************************************************
        PROCEDURE DIVISION.
@@ -77,20 +63,14 @@
       *----------------------------------------------------------------*
        MAINLINE SECTION.
 
-      *----------------------------------------------------------------*
       * Common code                                                    *
-      *----------------------------------------------------------------*
-      * initialize working storage variables
            INITIALIZE WS-HEADER.
       * set up general variable
            MOVE EIBTRNID TO WS-TRANSID.
            MOVE EIBTRMID TO WS-TERMID.
            MOVE EIBTASKN TO WS-TASKNUM.
-      *----------------------------------------------------------------*
 
-      *----------------------------------------------------------------*
       * Check commarea and obtain required details                     *
-      *----------------------------------------------------------------*
       * If NO commarea received issue an ABEND
            IF EIBCALEN IS EQUAL TO ZERO
                MOVE ' NO COMMAREA RECEIVED' TO EM-VARIABLE
@@ -103,7 +83,6 @@
            MOVE EIBCALEN TO WS-CALEN.
            SET WS-ADDR-DFHCOMMAREA TO ADDRESS OF DFHCOMMAREA.
 
-      * Check commarea is large enough
            IF EIBCALEN IS LESS THAN WS-CA-HEADER-LEN
              MOVE '98' TO CA-RETURN-CODE
              EXEC CICS RETURN END-EXEC
@@ -112,15 +91,12 @@
       *----------------------------------------------------------------*
       * Check request-id in commarea and if recognised ...             *
       * Call routine to delete row from policy table                   *
-      *----------------------------------------------------------------*
-      * Upper case value passed in Request Id field                    *
            MOVE FUNCTION UPPER-CASE(CA-REQUEST-ID) TO CA-REQUEST-ID
 
            IF ( CA-REQUEST-ID NOT EQUAL TO '01DEND' AND
                 CA-REQUEST-ID NOT EQUAL TO '01DMOT' AND
                 CA-REQUEST-ID NOT EQUAL TO '01DHOU' AND
                 CA-REQUEST-ID NOT EQUAL TO '01DCOM' )
-      *        Request is not recognised or supported
                MOVE '99' TO CA-RETURN-CODE
            ELSE
                PERFORM DELETE-POLICY-DB2-INFO
@@ -129,7 +105,6 @@
                End-if
            END-IF
 
-      * Return to caller
            EXEC CICS RETURN END-EXEC.
 
        MAINLINE-EXIT.
@@ -146,14 +121,10 @@
            EXIT.
 
 
-      *================================================================*
       * Procedure to write error message to TD QUEUE(CSMT)             *
-      *   message will include Date, Time, Program Name, Customer      *
       *   Number, Policy Number and SQLCODE.                           *
       *================================================================*
        WRITE-ERROR-MESSAGE.
-      * Save SQLCODE in message
-      * Obtain and format current time and date
            EXEC CICS ASKTIME ABSTIME(WS-ABSTIME)
            END-EXEC
            EXEC CICS FORMATTIME ABSTIME(Ws-ABSTIME)
@@ -167,7 +138,6 @@
                      COMMAREA(ERROR-MSG)
                      LENGTH(LENGTH OF ERROR-MSG)
            END-EXEC.
-      * Write 90 bytes or as much as we have of commarea to TDQ
            IF EIBCALEN > 0 THEN
              IF EIBCALEN < 91 THEN
                MOVE DFHCOMMAREA(1:EIBCALEN) TO CA-DATA

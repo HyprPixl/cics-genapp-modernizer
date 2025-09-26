@@ -1,9 +1,5 @@
        PROCESS SQL
-      ******************************************************************
-      *                                                                *
       * (C) Copyright IBM Corp. 2011, 2021                             *
-      *                                                                *
-      *                    Inquire Customer                            *
       *                                                                *
       * Select customer details from DB2 table                         *
       *                                                                *
@@ -12,15 +8,10 @@
        PROGRAM-ID. LGICDB01.
        ENVIRONMENT DIVISION.
        CONFIGURATION SECTION.
-      *
        DATA DIVISION.
 
        WORKING-STORAGE SECTION.
 
-      *----------------------------------------------------------------*
-      * Common defintions                                              *
-      *----------------------------------------------------------------*
-      * Run time (debug) infomation for this invocation
         01  WS-HEADER.
            03 WS-EYECATCHER            PIC X(16)
                                         VALUE 'LGICDB01------WS'.
@@ -31,7 +22,6 @@
            03 WS-ADDR-DFHCOMMAREA      USAGE is POINTER.
            03 WS-CALEN                 PIC S9(4) COMP.
 
-      * Variables for time/date processing
        01  WS-ABSTIME                  PIC S9(8) COMP VALUE +0.
        01  WS-TIME                     PIC X(8)  VALUE SPACES.
        01  WS-DATE                     PIC X(10) VALUE SPACES.
@@ -54,7 +44,6 @@
            03 CA-DATA               PIC X(90) VALUE SPACES.
        
       *----------------------------------------------------------------*
-      * Fields to be used to calculate if commarea is large enough
        01  WS-COMMAREA-LENGTHS.
            03 WS-CA-HEADERTRAILER-LEN  PIC S9(4) COMP VALUE +18.
            03 WS-REQUIRED-CA-LEN       PIC S9(4)      VALUE +0.
@@ -62,29 +51,21 @@
       *----------------------------------------------------------------*
       * Definitions required by SQL statement                          *
       *   DB2 datatypes to COBOL equivalents                           *
-      *     SMALLINT    :   PIC S9(4) COMP                             *
       *     INTEGER     :   PIC S9(9) COMP                             *
       *     DATE        :   PIC X(10)                                  *
       *     TIMESTAMP   :   PIC X(26)                                  *
       *----------------------------------------------------------------*
-      * Host variables for input to DB2 integer types
        01  DB2-IN-INTEGERS.
            03 DB2-CUSTOMERNUMBER-INT   PIC S9(9) COMP.
 
            COPY LGPOLICY.
-      *----------------------------------------------------------------*
 
-      *----------------------------------------------------------------*
       *    DB2 CONTROL
       *----------------------------------------------------------------*
-      * SQLCA DB2 communications area
            EXEC SQL
                INCLUDE SQLCA
            END-EXEC.
       *
-      *
-      ******************************************************************
-      *    L I N K A G E     S E C T I O N
       ******************************************************************
        LINKAGE SECTION.
 
@@ -94,26 +75,19 @@
            END-EXEC.
 
       ******************************************************************
-      *    P R O C E D U R E S
-      ******************************************************************
        PROCEDURE DIVISION.
 
       *----------------------------------------------------------------*
        MAINLINE SECTION.
 
-      *----------------------------------------------------------------*
       * Common code                                                    *
-      *----------------------------------------------------------------*
-      * initialize working storage variables
            INITIALIZE WS-HEADER.
-      * set up general variable
            MOVE EIBTRNID TO WS-TRANSID.
            MOVE EIBTRMID TO WS-TERMID.
            MOVE EIBTASKN TO WS-TASKNUM.
       *----------------------------------------------------------------*
 
       *----------------------------------------------------------------*
-      * Check commarea and obtain required details                     *
       *----------------------------------------------------------------*
       * If NO commarea received issue an ABEND
            IF EIBCALEN IS EQUAL TO ZERO
@@ -131,7 +105,6 @@
            INITIALIZE DB2-IN-INTEGERS.
 
       *----------------------------------------------------------------*
-      * Process incoming commarea                                      *
       *----------------------------------------------------------------*
       * check commarea length - meets minimum requirement
            MOVE WS-CUSTOMER-LEN        TO WS-REQUIRED-CA-LEN
@@ -149,8 +122,6 @@
 
       *----------------------------------------------------------------*
       * Obtain details from DB2                                        *
-      *----------------------------------------------------------------*
-      *    Call routine to issue SQL to obtain info from DB2
            PERFORM GET-CUSTOMER-INFO.
 
       *----------------------------------------------------------------*
@@ -162,7 +133,6 @@
 
        MAINLINE-EXIT.
            EXIT.
-      *----------------------------------------------------------------*
 
        GET-CUSTOMER-INFO.
 
@@ -204,15 +174,9 @@
 
            EXIT.
 
-      *================================================================*
-      * Procedure to write error message to Queues                     *
-      *   message will include Date, Time, Program Name, Customer      *
-      *   Number, Policy Number and SQLCODE.                           *
-      *================================================================*
        WRITE-ERROR-MESSAGE.
       * Save SQLCODE in message
            MOVE SQLCODE TO EM-SQLRC
-      * Obtain and format current time and date
            EXEC CICS ASKTIME ABSTIME(WS-ABSTIME)
            END-EXEC
            EXEC CICS FORMATTIME ABSTIME(WS-ABSTIME)
@@ -221,12 +185,10 @@
            END-EXEC
            MOVE WS-DATE TO EM-DATE
            MOVE WS-TIME TO EM-TIME
-      * Write output message to TDQ
            EXEC CICS LINK PROGRAM('LGSTSQ')
                      COMMAREA(ERROR-MSG)
                      LENGTH(LENGTH OF ERROR-MSG)
            END-EXEC.
-      * Write 90 bytes or as much as we have of commarea to TDQ
            IF EIBCALEN > 0 THEN
              IF EIBCALEN < 91 THEN
                MOVE DFHCOMMAREA(1:EIBCALEN) TO CA-DATA

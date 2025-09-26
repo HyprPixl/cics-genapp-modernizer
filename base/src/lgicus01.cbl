@@ -1,12 +1,6 @@
       ******************************************************************
       *                                                                *
-      * (C) Copyright IBM Corp. 2011, 2020                             *
-      *                                                                *
       *                    Inquire Customer                            *
-      *                                                                *
-      *   To obtain Customer's details from database.                  *
-      *                                                                *
-      * Customer Inquire Business logic                                *
       *                                                                *
       ******************************************************************
        IDENTIFICATION DIVISION.
@@ -19,9 +13,6 @@
        WORKING-STORAGE SECTION.
 
       *----------------------------------------------------------------*
-      * Common defintions                                              *
-      *----------------------------------------------------------------*
-      * Run time (debug) infomation for this invocation
         01  WS-HEADER.
            03 WS-EYECATCHER            PIC X(16)
                                         VALUE 'LGICUS01------WS'.
@@ -37,7 +28,6 @@
        01  WS-TIME                     PIC X(8)  VALUE SPACES.
        01  WS-DATE                     PIC X(10) VALUE SPACES.
 
-      * Error Message structure
        01  ERROR-MSG.
            03 EM-DATE                  PIC X(8)  VALUE SPACES.
            03 FILLER                   PIC X     VALUE SPACES.
@@ -58,10 +48,8 @@
            03 WS-REQUIRED-CA-LEN       PIC S9(4)      VALUE +0.
 
            COPY LGPOLICY.
-      *----------------------------------------------------------------*
 
       ******************************************************************
-      *    L I N K A G E     S E C T I O N
       ******************************************************************
        LINKAGE SECTION.
 
@@ -73,15 +61,12 @@
       ******************************************************************
        PROCEDURE DIVISION.
 
-      *----------------------------------------------------------------*
        MAINLINE SECTION.
-      *
            INITIALIZE WS-HEADER.
       *
            MOVE EIBTRNID TO WS-TRANSID.
            MOVE EIBTRMID TO WS-TERMID.
            MOVE EIBTASKN TO WS-TASKNUM.
-      *----------------------------------------------------------------*
       * Check commarea and obtain required details                     *
       *----------------------------------------------------------------*
            IF EIBCALEN IS EQUAL TO ZERO
@@ -96,8 +81,6 @@
            SET WS-ADDR-DFHCOMMAREA TO ADDRESS OF DFHCOMMAREA.
 
       *----------------------------------------------------------------*
-      * Process incoming commarea                                      *
-      *----------------------------------------------------------------*
       * check commarea length
            MOVE WS-CUSTOMER-LEN        TO WS-REQUIRED-CA-LEN
            ADD WS-CA-HEADERTRAILER-LEN TO WS-REQUIRED-CA-LEN
@@ -108,15 +91,12 @@
 
            PERFORM GET-CUSTOMER-INFO.
 
-      *----------------------------------------------------------------*
       * END PROGRAM and return to caller                               *
-      *----------------------------------------------------------------*
        MAINLINE-END.
            EXEC CICS RETURN END-EXEC.
 
        MAINLINE-EXIT.
            EXIT.
-      *----------------------------------------------------------------*
        GET-CUSTOMER-INFO.
 
            EXEC CICS LINK Program(LGICDB01)
@@ -127,13 +107,9 @@
 
            EXIT.
 
-      *================================================================*
       * Procedure to write error message to Queues                     *
-      *   message will include Date, Time, Program Name, Customer      *
       *   Number, Policy Number and SQLCODE.                           *
-      *================================================================*
        WRITE-ERROR-MESSAGE.
-      * Obtain and format current time and date
            EXEC CICS ASKTIME ABSTIME(WS-ABSTIME)
            END-EXEC
            EXEC CICS FORMATTIME ABSTIME(WS-ABSTIME)

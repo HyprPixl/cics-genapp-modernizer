@@ -1,27 +1,17 @@
        PROCESS SQL
-      ******************************************************************
       *                                                                *
       * (C) Copyright IBM Corp. 2011, 2021                             *
-      *                                                                *
-      *                    DELETE Policy                               *
-      *                                                                *
-      *  Appropriate row will be deleted from DB2 Policy and the       *
       *  Endowment/House/Motor/Commercial table.                       *
       *                                                                *
-      ******************************************************************
        IDENTIFICATION DIVISION.
        PROGRAM-ID. LGDPDB01.
        ENVIRONMENT DIVISION.
        CONFIGURATION SECTION.
-      *
        DATA DIVISION.
 
        WORKING-STORAGE SECTION.
 
-      *----------------------------------------------------------------*
       * Common defintions                                              *
-      *----------------------------------------------------------------*
-      * Run time (debug) infomation for this invocation
         01  WS-HEADER.
            03 WS-EYECATCHER            PIC X(16)
                                         VALUE 'LGDPDB01------WS'.
@@ -55,36 +45,26 @@
        01  CA-ERROR-MSG.
            03 FILLER                   PIC X(9)  VALUE 'COMMAREA='.
            03 CA-DATA                  PIC X(90) VALUE SPACES.
-      *----------------------------------------------------------------*
        01 LGDPVS01                  PIC x(8) Value 'LGDPVS01'.
       *----------------------------------------------------------------*
       * Definitions required for data manipulation                     *
       *----------------------------------------------------------------*
-      * Fields to be used to calculate minimum commarea length required
       * (for Endowment this does not allow for VARCHAR)
        01  WS-COMMAREA-LENGTHS.
            03 WS-CA-HEADER-LEN          PIC S9(4) COMP VALUE +28.
 
       *----------------------------------------------------------------*
 
-      *----------------------------------------------------------------*
-      * Definitions required by SQL statement                          *
       *   DB2 datatypes to COBOL equivalents                           *
-      *     SMALLINT    :   PIC S9(4) COMP                             *
-      *     INTEGER     :   PIC S9(9) COMP                             *
-      *     DATE        :   PIC X(10)                                  *
       *     TIMESTAMP   :   PIC X(26)                                  *
-      *----------------------------------------------------------------*
       * Host variables for input to DB2 integer types
       * Any values specified in SQL stmts must be defined here so
       * available to SQL pre-compiler
        01 DB2-IN-INTEGERS.
           03 DB2-CUSTOMERNUM-INT       PIC S9(9) COMP.
           03 DB2-POLICYNUM-INT         PIC S9(9) COMP.
-      *----------------------------------------------------------------*
 
       *----------------------------------------------------------------*
-      *    DB2 CONTROL
       *----------------------------------------------------------------*
       * SQLCA DB2 communications area
            EXEC SQL
@@ -103,31 +83,22 @@
 
 
       ******************************************************************
-      *    P R O C E D U R E S
       ******************************************************************
        PROCEDURE DIVISION.
 
-      *----------------------------------------------------------------*
        MAINLINE SECTION.
 
       *----------------------------------------------------------------*
-      * Common code                                                    *
       *----------------------------------------------------------------*
       * initialize working storage variables
            INITIALIZE WS-HEADER.
-      * set up general variable
            MOVE EIBTRNID TO WS-TRANSID.
            MOVE EIBTRMID TO WS-TERMID.
            MOVE EIBTASKN TO WS-TASKNUM.
-      *----------------------------------------------------------------*
 
-      * initialize DB2 host variables
            INITIALIZE DB2-IN-INTEGERS.
 
       *----------------------------------------------------------------*
-      * Check commarea and obtain required details                     *
-      *----------------------------------------------------------------*
-      * If NO commarea received issue an ABEND
            IF EIBCALEN IS EQUAL TO ZERO
                MOVE ' NO COMMAREA RECEIVED' TO EM-VARIABLE
                PERFORM WRITE-ERROR-MESSAGE
@@ -145,16 +116,12 @@
              EXEC CICS RETURN END-EXEC
            END-IF
 
-      * Convert commarea customer & policy nums to DB2 integer format
            MOVE CA-CUSTOMER-NUM TO DB2-CUSTOMERNUM-INT
            MOVE CA-POLICY-NUM   TO DB2-POLICYNUM-INT
-      * and save in error msg field incase required
            MOVE CA-CUSTOMER-NUM TO EM-CUSNUM
            MOVE CA-POLICY-NUM   TO EM-POLNUM
 
       *----------------------------------------------------------------*
-      * Check request-id in commarea and if recognised ...             *
-      * Call routine to delete row from policy table                   *
       *----------------------------------------------------------------*
 
            IF ( CA-REQUEST-ID NOT EQUAL TO '01DEND' AND
@@ -178,10 +145,7 @@
            EXIT.
       *----------------------------------------------------------------*
 
-      *================================================================*
-      * Delete appropriate row from policy table                       *
       *  because of FOREIGN KEY definitions the delete should be       *
-      *  propagated to the appropriate 'policy type' table             *
       *================================================================*
        DELETE-POLICY-DB2-INFO.
 
@@ -194,7 +158,6 @@
            END-EXEC
 
       *    Treat SQLCODE 0 and SQLCODE 100 (record not found) as
-      *    successful - end result is record does not exist
            IF SQLCODE NOT EQUAL 0 Then
                MOVE '90' TO CA-RETURN-CODE
                PERFORM WRITE-ERROR-MESSAGE
@@ -205,14 +168,9 @@
 
 
       *================================================================*
-      * Procedure to write error message to Queues                     *
-      *   message will include Date, Time, Program Name, Customer      *
-      *   Number, Policy Number and SQLCODE.                           *
       *================================================================*
        WRITE-ERROR-MESSAGE.
-      * Save SQLCODE in message
            MOVE SQLCODE TO EM-SQLRC
-      * Obtain and format current time and date
            EXEC CICS ASKTIME ABSTIME(WS-ABSTIME)
            END-EXEC
            EXEC CICS FORMATTIME ABSTIME(Ws-ABSTIME)

@@ -1,17 +1,10 @@
-      ******************************************************************
-      *                                                                *
-      * (C) Copyright IBM Corp. 2011, 2020                             *
-      *                                                                *
-      *                    Customer Inquire                            *
       *                                                                *
       * This program will return a random customer number that is      *
-      *  in the VSAM KSDS Customer dataset.                            *
       *                                                                *
       * Random seed will be obtained from a control TSQ                *
       *  and used in the read                                          *
       *                                                                *
       * Call by LINK or TRAN. Returned by Commarea or Screen display   *
-      *                                                                *
       ******************************************************************
        IDENTIFICATION DIVISION.
        PROGRAM-ID. LGICVS01.
@@ -45,11 +38,9 @@
        01  FILLER REDEFINES Read-MSG.
          03 FILLER                   PIC X(14).
          03 READ-CUST-HIGH           PIC 9(10).
-      ******************************
        01  WS-Cust-Low               Pic S9(10).
        01  WS-Cust-High              Pic S9(10).
        01  WS-Cust-Number            Pic X(10).
-      ******************************
 
        01  WRITE-MSG.
          03 WRITE-MSG-E            PIC X(20) Value '**** GENAPP CNTL'.
@@ -76,8 +67,6 @@
        77 F10                        Pic S9(4) Comp Value 10.
 
       *****************************************************************
-      *    L I N K A G E     S E C T I O N
-      *****************************************************************
        LINKAGE SECTION.
        01  DFHCOMMAREA.
          03  COMMA-DATA.
@@ -85,7 +74,6 @@
            05 Comma-Data-High        Pic 9(10).
            05 FILLER                 Pic X(60).
 
-      *----------------------------------------------------------------*
       *****************************************************************
        PROCEDURE DIVISION.
 
@@ -119,7 +107,6 @@
               MOVE WS-RECV-DATA  TO WS-COMMAREA
               SUBTRACT 5 FROM WS-RECV-LEN
            END-IF.
-      *
            Move 0001000001 to WS-Cust-Low
            Move 0001000001 to WS-Cust-High
            Move 'Y'        to WS-FLAG-TSQE
@@ -157,8 +144,6 @@
       *
            Move WS-Cust-Low to WRITE-MSG-LOW
            Move WS-Cust-High to WRITE-MSG-HIGH
-      *
-      *
            If WS-FLAG-TSQE = 'Y'
              EXEC CICS WRITEQ TS QUEUE(STSQ-NAME)
                        FROM(WRITE-MSG-E)
@@ -167,7 +152,6 @@
                        LENGTH(20)
              END-EXEC
            End-If.
-      *
            If WS-FLAG-TSQL = 'Y'
              EXEC CICS WRITEQ TS QUEUE(STSQ-NAME)
                        FROM(WRITE-MSG-L)
@@ -176,7 +160,6 @@
                        LENGTH(23)
              END-EXEC
            End-If.
-      *
            If WS-FLAG-TSQH = 'Y'
              EXEC CICS WRITEQ TS QUEUE(STSQ-NAME)
                        FROM(WRITE-MSG-H)

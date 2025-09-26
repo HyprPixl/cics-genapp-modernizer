@@ -1,12 +1,5 @@
-      ******************************************************************
-      *                                                                *
-      * (C) Copyright IBM Corp. 2011, 2020                             *
-      *                                                                *
-      *                    Update Policy - VSAM                        *
       *                                                                *
       * VSAM KSDS Policy record Update                                 *
-      *                                                                *
-      ******************************************************************
        IDENTIFICATION DIVISION.
        PROGRAM-ID. LGUPVS01.
        ENVIRONMENT DIVISION.
@@ -53,7 +46,6 @@
       *
        01  WS-FileIn                   Pic X(1024) value Spaces.
       ******************************
-      * Variables for time/date processing
        01  WS-ABSTIME                  PIC S9(8) COMP VALUE +0.
        01  WS-TIME                     PIC X(8)  VALUE SPACES.
        01  WS-DATE                     PIC X(10) VALUE SPACES.
@@ -83,22 +75,17 @@
        77 Eyecatcher               PIC X(16)
                                       Value 'Program LGUPVS01'.
       *****************************************************************
-      *    L I N K A G E     S E C T I O N
-      *****************************************************************
        LINKAGE SECTION.
        01  DFHCOMMAREA.
          Copy LGCMAREA.
 
       *----------------------------------------------------------------*
-      *****************************************************************
        PROCEDURE DIVISION.
 
       *---------------------------------------------------------------*
        MAINLINE SECTION.
       *
-      *---------------------------------------------------------------*
            Move EIBCALEN To WS-Commarea-Len.
-      *---------------------------------------------------------------*
            Move CA-Request-ID(4:1) To WF-Request-ID
            Move CA-Policy-Num      To WF-Policy-Num
            Move CA-Customer-Num    To WF-Customer-Num
@@ -165,12 +152,10 @@
              EXEC CICS RETURN END-EXEC
            End-If.
 
-      *---------------------------------------------------------------*
 
        A-EXIT.
            EXIT.
            GOBACK.
-      *---------------------------------------------------------------*
        WRITE-ERROR-MESSAGE.
            EXEC CICS ASKTIME ABSTIME(WS-ABSTIME)
            END-EXEC

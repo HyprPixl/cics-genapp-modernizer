@@ -1,8 +1,3 @@
-      ******************************************************************
-      *                                                                *
-      * (C) Copyright IBM Corp. 2011, 2020                             *
-      *                                                                *
-      *                    Motor Policy Menu                           *
       *                                                                *
       * Menu for Motor Policy Transactions                             *
       *                                                                *
@@ -23,7 +18,6 @@
        COPY LGCMAREA.
 
       *----------------------------------------------------------------*
-      *****************************************************************
        PROCEDURE DIVISION.
 
       *---------------------------------------------------------------*
@@ -43,7 +37,6 @@
            MOVE '000000'       To ENP1PREO.
 
 
-      * Display Main Menu
            EXEC CICS SEND MAP ('SSMAPP1')
                      MAPSET ('SSMAP')
                      ERASE
@@ -249,7 +242,6 @@
            END-EVALUATE.
 
 
-      *    Send message to terminal and return
 
            EXEC CICS RETURN
            END-EXEC.

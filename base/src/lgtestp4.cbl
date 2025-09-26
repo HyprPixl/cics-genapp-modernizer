@@ -1,8 +1,4 @@
-      ******************************************************************
-      *                                                                *
       * (C) Copyright IBM Corp. 2011, 2020                             *
-      *                                                                *
-      *               Commercial Policy Menu                           *
       *                                                                *
       * Menu for Commercial Policy Transactions                        *
       *                                                                *
@@ -11,7 +7,6 @@
        PROGRAM-ID. LGTESTP4.
        ENVIRONMENT DIVISION.
        CONFIGURATION SECTION.
-      *
        DATA DIVISION.
        WORKING-STORAGE SECTION.
 
@@ -22,8 +17,6 @@
        01 COMM-AREA.
        COPY LGCMAREA.
 
-      *----------------------------------------------------------------*
-      *****************************************************************
        PROCEDURE DIVISION.
 
       *---------------------------------------------------------------*

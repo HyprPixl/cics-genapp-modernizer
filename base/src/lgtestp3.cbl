@@ -1,8 +1,4 @@
-      ******************************************************************
-      *                                                                *
       * (C) Copyright IBM Corp. 2011, 2020                             *
-      *                                                                *
-      *                    House Policy Menu                           *
       *                                                                *
       * Menu for House Policy Transactions                             *
       *                                                                *
@@ -11,7 +7,6 @@
        PROGRAM-ID. LGTESTP3.
        ENVIRONMENT DIVISION.
        CONFIGURATION SECTION.
-      *
        DATA DIVISION.
        WORKING-STORAGE SECTION.
 
@@ -22,8 +17,6 @@
        01 COMM-AREA.
        COPY LGCMAREA.
 
-      *----------------------------------------------------------------*
-      *****************************************************************
        PROCEDURE DIVISION.
 
       *---------------------------------------------------------------*

@@ -1,19 +1,12 @@
-      ******************************************************************
       *                                                                *
       * (C) Copyright IBM Corp. 2011, 2020                             *
       *                                                                *
-      *                    Inquire Policy                              *
-      *                                                                *
       * This program will return a random Policy/customer number from  *
-      *  the VSAM KSDS Policy file. Input parm of policy type will     *
-      *  determine the key                                             *
       *                                                                *
-      ******************************************************************
        IDENTIFICATION DIVISION.
        PROGRAM-ID. LGIPVS01.
        ENVIRONMENT DIVISION.
        CONFIGURATION SECTION.
-      *
        DATA DIVISION.
        WORKING-STORAGE SECTION.
 
@@ -68,12 +61,9 @@
            05  FILLER               Pic X(58).
 
       *----------------------------------------------------------------*
-      *****************************************************************
        PROCEDURE DIVISION.
 
-      *---------------------------------------------------------------*
        MAINLINE SECTION.
-      *
            MOVE SPACES TO WS-RECV.
 
            EXEC CICS ASSIGN SYSID(WS-SYSID)
@@ -103,7 +93,6 @@
               MOVE WS-RECV-DATA  TO WS-COMMAREA
               SUBTRACT 6 FROM WS-RECV-LEN
            END-IF.
-      *
            Move Spaces                      To CA-Area
            Move WS-Commarea(1:1)            To Part-Key-Type
            Move WS-Commarea(2:WS-RECV-LEN)  To Part-Key-Num
