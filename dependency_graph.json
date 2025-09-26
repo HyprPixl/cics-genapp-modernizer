@@ -1,8 +1,48 @@
 {
   "nodes": {
+    "COBOL.JCL": {
+      "depends_on": [
+        "LGCMAREA",
+        "LGPOLICY",
+        "LGSTSQ"
+      ],
+      "description": "COBOL compile/link jobstream",
+      "type": "jcl"
+    },
+    "CUST1.REXX": {
+      "depends_on": [
+        "COBOL.JCL"
+      ],
+      "description": "ISPF tailoring script for GenApp datasets",
+      "type": "rexx"
+    },
+    "DATA.KSDSCUST.TXT": {
+      "depends_on": [
+        "KSDSCUST"
+      ],
+      "description": "Seed records for KSDSCUST",
+      "type": "dataset"
+    },
+    "DATA.KSDSPOLY.TXT": {
+      "depends_on": [
+        "KSDSPOLY"
+      ],
+      "description": "Seed records for KSDSPOLY",
+      "type": "dataset"
+    },
     "DB2.COMMERCIAL": {
       "depends_on": [],
       "description": "Commercial policy extension",
+      "type": "db2-table"
+    },
+    "DB2.CUSTOMER": {
+      "depends_on": [],
+      "description": "Customer master table",
+      "type": "db2-table"
+    },
+    "DB2.CUSTOMER_SECURE": {
+      "depends_on": [],
+      "description": "Customer security credential store",
       "type": "db2-table"
     },
     "DB2.ENDOWMENT": {
@@ -25,6 +65,30 @@
       "description": "Core policy header table",
       "type": "db2-table"
     },
+    "EVENT.TRANSACTION_COUNTERS": {
+      "depends_on": [
+        "LGCMAREA"
+      ],
+      "description": "CICS event binding capturing request/return codes",
+      "type": "event-binding"
+    },
+    "GENACUSTNUM": {
+      "depends_on": [],
+      "description": "CICS counter for customer numbers",
+      "type": "cics-counter"
+    },
+    "INSTALL.SH": {
+      "depends_on": [
+        "COBOL.JCL"
+      ],
+      "description": "USS installer allocating datasets",
+      "type": "shell"
+    },
+    "KSDSCUST": {
+      "depends_on": [],
+      "description": "VSAM cluster for customer profiles",
+      "type": "vsam-file"
+    },
     "KSDSPOLY": {
       "depends_on": [],
       "description": "VSAM cluster for policy summaries",
@@ -32,34 +96,42 @@
     },
     "LGACDB01": {
       "depends_on": [
+        "DB2.CUSTOMER",
+        "GENACUSTNUM",
         "LGACDB02",
         "LGACVS01",
         "LGCMAREA",
+        "LGPOLICY",
         "LGSTSQ"
       ],
-      "description": "Add customer DB2 backend service",
+      "description": "DB2 customer insert service",
       "type": "cobol"
     },
     "LGACDB02": {
-      "depends_on": [],
-      "description": null,
-      "type": null
+      "depends_on": [
+        "DB2.CUSTOMER_SECURE",
+        "LGSTSQ"
+      ],
+      "description": "Customer security initializer",
+      "type": "cobol"
     },
     "LGACUS01": {
       "depends_on": [
         "LGACDB01",
         "LGCMAREA",
+        "LGPOLICY",
         "LGSTSQ"
       ],
-      "description": "Add customer front-end program",
+      "description": "Add customer front-end",
       "type": "cobol"
     },
     "LGACVS01": {
       "depends_on": [
+        "KSDSCUST",
         "LGCMAREA",
         "LGSTSQ"
       ],
-      "description": "Customer VSAM writer service",
+      "description": "Customer VSAM mirror writer",
       "type": "cobol"
     },
     "LGAPDB01": {
@@ -115,23 +187,38 @@
       "type": "cobol"
     },
     "LGICDB01": {
-      "depends_on": [],
-      "description": null,
-      "type": null
+      "depends_on": [
+        "DB2.CUSTOMER",
+        "LGCMAREA",
+        "LGPOLICY",
+        "LGSTSQ"
+      ],
+      "description": "DB2 customer query",
+      "type": "cobol"
     },
     "LGICUS01": {
       "depends_on": [
         "LGCMAREA",
         "LGICDB01",
+        "LGPOLICY",
         "LGSTSQ"
       ],
-      "description": "Inquire customer front-end program",
+      "description": "Customer inquiry front-end",
       "type": "cobol"
     },
     "LGIPDB01": {
-      "depends_on": [],
-      "description": null,
-      "type": null
+      "depends_on": [
+        "DB2.COMMERCIAL",
+        "DB2.ENDOWMENT",
+        "DB2.HOUSE",
+        "DB2.MOTOR",
+        "DB2.POLICY",
+        "LGCMAREA",
+        "LGPOLICY",
+        "LGSTSQ"
+      ],
+      "description": "DB2 policy query",
+      "type": "cobol"
     },
     "LGIPOL01": {
       "depends_on": [
@@ -139,7 +226,7 @@
         "LGIPDB01",
         "LGSTSQ"
       ],
-      "description": "Inquire policy front-end program",
+      "description": "Policy inquiry front-end",
       "type": "cobol"
     },
     "LGPOLICY": {
@@ -153,9 +240,15 @@
       "type": "cobol"
     },
     "LGUCDB01": {
-      "depends_on": [],
-      "description": null,
-      "type": null
+      "depends_on": [
+        "DB2.CUSTOMER",
+        "LGCMAREA",
+        "LGPOLICY",
+        "LGSTSQ",
+        "LGUCVS01"
+      ],
+      "description": "DB2 customer update",
+      "type": "cobol"
     },
     "LGUCUS01": {
       "depends_on": [
@@ -166,10 +259,28 @@
       "description": "Update customer front-end program",
       "type": "cobol"
     },
+    "LGUCVS01": {
+      "depends_on": [
+        "KSDSCUST",
+        "LGCMAREA",
+        "LGSTSQ"
+      ],
+      "description": "Customer VSAM rewrite",
+      "type": "cobol"
+    },
     "LGUPDB01": {
-      "depends_on": [],
-      "description": null,
-      "type": null
+      "depends_on": [
+        "DB2.ENDOWMENT",
+        "DB2.HOUSE",
+        "DB2.MOTOR",
+        "DB2.POLICY",
+        "LGCMAREA",
+        "LGPOLICY",
+        "LGSTSQ",
+        "LGUPVS01"
+      ],
+      "description": "DB2 policy update",
+      "type": "cobol"
     },
     "LGUPOL01": {
       "depends_on": [
@@ -179,6 +290,45 @@
       ],
       "description": "Update policy front-end program",
       "type": "cobol"
+    },
+    "LGUPVS01": {
+      "depends_on": [
+        "KSDSPOLY",
+        "LGCMAREA",
+        "LGSTSQ"
+      ],
+      "description": "Policy VSAM rewrite",
+      "type": "cobol"
+    },
+    "MAC1.REXX": {
+      "depends_on": [
+        "CUST1.REXX"
+      ],
+      "description": "Macro driver for customizing members",
+      "type": "rexx"
+    },
+    "POLLOO2": {
+      "depends_on": [],
+      "description": "Customer policy list structure",
+      "type": "copybook"
+    },
+    "POLLOOK": {
+      "depends_on": [],
+      "description": "Slim request header (ID + customer)",
+      "type": "copybook"
+    },
+    "SSMAP.BMS": {
+      "depends_on": [],
+      "description": "3270 mapset defining customer/policy panels",
+      "type": "bms-map"
+    },
+    "WSIM.SCENARIOS": {
+      "depends_on": [
+        "DATA.KSDSCUST.TXT",
+        "DATA.KSDSPOLY.TXT"
+      ],
+      "description": "3270 workstation simulation scripts",
+      "type": "wsim-script"
     }
   }
 }
