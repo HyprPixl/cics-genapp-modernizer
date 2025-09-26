@@ -25,14 +25,55 @@
 - List nodes (optionally by type): `./tools/dep_graph.py list --type cobol`.
 - Review dependents of a component: `./tools/dep_graph.py dependents <NAME>`.
 
-## Work Sequencing
-- **Phase 1 – Core Transactions (serial):** Continue through customer and policy front-end programs (`LGAPOL01`, `LGAPVS01`, `LGACUS01`, etc.), pairing each with its backing DB module so request/response flows stay consistent.
-- **Phase 2 – Data Services (serial):** Document batch/database utilities (`LGAPDB01`, `LGDPDB01`, `LGIPDB01`, `LGUCDB01`) and shared logging (`LGSTSQ`) once their callers are understood.
-- **Phase 3 – Shared Assets (parallel):** Tackle copybooks (`LGCMAREA`, `POLLOOK`, `POLLOO2`, `SOA*`) and BMS maps (`SSMAP.bms`) alongside transaction work; these can be owned by a separate teammate with ongoing updates.
-- **Phase 4 – Ops & Automation (parallel):** While COBOL review continues, another stream can inventory JCL in `base/cntl/`, REXX execs, and `install.sh`, cross-linking jobs to program compile/deploy steps.
-- **Phase 5 – Data & Simulation (parallel):** In parallel with ops review, analyze `base/data/` datasets and `base/wsim/` scripts, documenting how they support test scenarios and customer journeys.
+## Agent Task Assignments
 
-## Parallelization Notes
-- Pair front-end and back-end COBOL modules in the same lane to avoid re-reading shared commareas.
-- Assign separate owners for shared copybooks/maps and for infrastructure artifacts (JCL/REXX/data) so updates proceed without blocking the core transaction walkthrough.
-- Revisit the dependency graph after each phase to confirm cross-stream updates stay synchronized.
+### Agent 1 Task: Core Transactions & Data Services (Serial Work)
+**Priority:** Critical Path - Must be completed sequentially
+**Focus:** Transaction programs and their backing database services
+
+**Phase 1 – Core Transactions:**
+- Continue through customer and policy front-end programs (`LGAPOL01`, `LGAPVS01`, `LGACUS01`, etc.)
+- Pair each front-end with its backing DB module so request/response flows stay consistent
+- Document transaction patterns: commarea validation, request ID checking, backend delegation
+
+**Phase 2 – Data Services:**
+- Document batch/database utilities (`LGAPDB01`, `LGDPDB01`, `LGIPDB01`, `LGUCDB01`)
+- Document shared logging service (`LGSTSQ`) once its callers are understood
+- Map DB2 table relationships and VSAM cluster dependencies
+
+### Agent 2 Task: Shared Assets (Parallel Work)
+**Priority:** High - Can run in parallel with Agent 1
+**Focus:** Copybooks, BMS maps, and shared data structures
+
+**Responsibilities:**
+- Document copybooks (`LGCMAREA`, `POLLOOK`, `POLLOO2`, `SOA*`) 
+- Analyze BMS maps (`SSMAP.bms`) and screen flow definitions
+- Maintain cross-references as Agent 1 discovers usage patterns
+- Update dependency graph with shared asset relationships
+
+### Agent 3 Task: Ops & Automation (Parallel Work)  
+**Priority:** Medium - Can run in parallel with other agents
+**Focus:** Build, deployment, and operational tooling
+
+**Responsibilities:**
+- Inventory JCL members in `base/cntl/` and map to functions (compile, bind, housekeeping)
+- Document REXX executives in `base/exec/` for build and operations automation
+- Analyze `install.sh` script for deployment procedures and dataset allocation
+- Cross-link JCL jobs to program compile/deploy steps discovered by Agent 1
+
+### Agent 4 Task: Data & Simulation (Parallel Work)
+**Priority:** Medium - Can run in parallel with other agents  
+**Focus:** Test data, simulation scripts, and customer journey scenarios
+
+**Responsibilities:**
+- Analyze sample datasets in `base/data/` (`ksdscust.txt`, `ksdspoly.txt`)
+- Document workstation simulator flows in `base/wsim/` scripts
+- Map simulation scenarios to transaction programs being documented by Agent 1
+- Document customer journey test scenarios and data relationships
+
+## Agent Coordination Notes
+- **Agent 1** (Core Transactions) drives the critical path - other agents should sync with their findings
+- **Agent 2** (Shared Assets) should pair front-end and back-end COBOL modules in the same review cycle to avoid re-reading shared commareas
+- **Agents 2, 3, 4** work in parallel streams for copybooks/maps, infrastructure artifacts (JCL/REXX/data), and simulation assets
+- All agents should update the dependency graph after each work session to keep cross-stream updates synchronized
+- Regular sync points recommended between agents to ensure discoveries are shared (especially between Agent 1 and Agent 2)
