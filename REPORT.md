@@ -31,6 +31,36 @@
 - Graph tracks COBOL modules, DB2 tables, VSAM clusters, datasets, REXX/JCL utilities, event bindings, and simulation assets.
 - Enables incremental updates as future agents document additional modules (`LGDPDB01`, `LGSTS*`, etc.).
 
+### Visualization Capabilities
+The dependency graph tool now includes comprehensive visualization features:
+
+```bash
+# Generate complete system overview
+./tools/dep_graph.py visualize --output full_dependency_graph.png
+
+# Focus on COBOL programs only
+./tools/dep_graph.py visualize --filter-type cobol --output cobol_graph.png --show-labels
+
+# Analyze database relationships
+./tools/dep_graph.py visualize --filter-type db2-table --output db2_graph.png
+
+# Custom sizing and layouts
+./tools/dep_graph.py visualize --width 20 --height 16 --layout hierarchical
+```
+
+**Generated Visualizations:**
+- `full_dependency_graph.png` - Complete system with all 43 nodes and 89 dependencies
+- `cobol_dependency_graph.png` - COBOL programs (19 nodes) showing program relationships  
+- `db2_tables_graph.png` - Database schema visualization (7 tables)
+- `copybook_graph.png` - Shared copybook structures (3 components)
+
+**Graph Statistics:**
+- **Total Components:** 43 nodes across 14 different types
+- **Dependencies:** 89 directed relationships 
+- **Most Referenced:** LGCMAREA copybook (used by 19 components)
+- **Most Complex:** LGAPDB01 (depends on 9 different components)
+- **Component Types:** COBOL (19), DB2 tables (7), copybooks (3), VSAM files (2), REXX scripts (2), datasets (2), and others
+
 ## Outcomes & Benefits
 - **Transparency** – Every major component now has a succinct description, interfaces, and error-handling notes.
 - **Traceability** – Dependency graph exposes cross-program relationships for modernization planning.
