@@ -21,6 +21,88 @@
 - Data & Simulation Assets: capture how `data/` and `wsim/` files drive scenarios or tests.
 - Platform Integrations: document `event-bindings/` artifacts and any external dependencies.
 
+## Operations JCL Documentation
+
+### CICS Definition JCL (Phase 4 Task 1)
+
+#### ADEF121.JCL – VSAM File Allocation and Data Setup
+- Purpose: defines VSAM clusters for customer (`KSDSCUST`) and policy (`KSDSPOLY`) data with initial data population.
+- Structure: DELETE/DEFINE pairs for both clusters followed by REPRO steps to load sample data.
+- Dependencies: requires source datasets `<KSDSCUS>` and `<KSDSPOL>` for initial data load.
+- Key Parameters: 
+  - `KSDSCUST`: 225-byte records, 10-byte key, 100/30 cylinder allocation
+  - `KSDSPOLY`: 64-byte records, 21-byte key, 100/30 cylinder allocation
+  - Both use 10% freespace, UNDO logging, and 8K control interval size
+
+#### CDEF121.JCL – Standalone GenApp CICS Definitions
+- Purpose: complete CICS system definition (CSD) for single-region GenApp deployment.
+- Coverage: all transactions (SSC1, SSP1-4, LGSE, LGCF, LGPF), programs, DB2 connections, and file definitions.
+- Groups: GENASAT (transactions), GENASAP (programs), GENASAD (DB2), GENASAF (files), GENA (shared).
+- Programs: includes all customer/policy transaction and backend programs plus test/setup utilities.
+- DB2 Setup: defines connection with GENASA plan, 400 thread limit, and transaction-based accounting.
+
+#### CDEF122.JCL – TOR-AOR-DOR Configuration
+- Purpose: distributed CICS region setup with Terminal Owning Region, Application Owning Region, and Data Owning Region.
+- Region Types:
+  - TOR (GENATORT/GENATORP): handles terminal transactions with remote system connections
+  - AOR (GENAAORP): executes application logic with links to data regions
+  - DOR (GENADORP/GENADORD): manages database and VSAM operations
+- Remote Systems: programs reference AOR1 and DOR1 for distributed processing.
+
+#### CDEF123.JCL – Extended Distributed Configuration
+- Purpose: enhanced TOR-AOR-DOR setup with dynamic program invocation and mirror transactions.
+- Key Features:
+  - Dynamic program definitions with specific transaction IDs (DSCA, DSCI, VSCA, etc.)
+  - Mirror transactions using DFHMIRS for data region operations
+  - Extended DB2 connection setup with multiple entry points
+- Transaction Patterns: DS* for database operations, VS* for VSAM operations.
+
+#### CDEF124.JCL – Web Services Configuration
+- Purpose: CICS web services enablement with TCPIP services and SOAP pipeline configuration.
+- Components:
+  - TCPIPSERVICE (GENATCP1) on port 4321 for HTTP transactions
+  - Pipeline (GENAPIP1) for SOAP 1.1 provider with XML configuration
+  - Web service directory setup for WSDL and service artifacts
+
+#### CDEF125.JCL – Event Processing Configuration
+- Purpose: business event monitoring and transaction throughput measurement.
+- Components:
+  - Event processing programs (LGASTAT1, LGWEBST5)
+  - Statistics transactions (LGST, SSST)
+  - Bundle configuration (GENAEV01) for business event capture
+- Focus: performance monitoring and transaction volume analysis.
+
+### Build and Deployment JCL (Phase 4 Task 2)
+
+#### COBOL.JCL – COBOL Compilation Procedure
+- Purpose: comprehensive COBOL build system with DB2 preprocessing and CICS integration.
+- Procedure (DB2PROC): three-step process for compile, copy, and link-edit operations.
+- Compiler Setup:
+  - IBM Enterprise COBOL with OPTFILE parameter control
+  - Full library concatenation: COBOL, CICS, DB2, and source libraries
+  - Extensive work datasets (15 SYSUT files) for compilation workspace
+- Linkage Editor: creates reentrant load modules with CICS and DB2 runtime support.
+- Coverage: compiles all 23 GenApp COBOL programs from LGACDB01 through LGWEBST5.
+
+#### ASMMAP.JCL – BMS Map Compilation
+- Purpose: assembles BMS maps (SSMAP) into both executable load modules and DSECT copybooks.
+- Process Flow:
+  1. Copy source map to temporary dataset
+  2. Assemble with MAP parameter to create load module
+  3. Link-edit load module for runtime use
+  4. Assemble with DSECT parameter to create copybook for program compilation
+- Dependencies: requires CICS macro libraries and system assembler datasets.
+- Output: executable map (load library) and DSECT (copybook library) for COBOL programs.
+
+#### DB2BIND.JCL – Database Package and Plan Creation
+- Purpose: creates DB2 packages and execution plans for all database-enabled programs.
+- Package Creation: individual packages for each DB2 program (LGICDB01, LGIPDB01, LGDPDB01, etc.).
+- Plan Configuration:
+  - Plan name: GENAONE with package list including NULLID.* and *.GENASA1.*
+  - Isolation level: Cursor Stability (CS) with CURRENTDATA(NO)
+  - Connection settings: DEALLOCATE release with USE acquire
+- Security: grants EXECUTE authority on GENAONE plan to PUBLIC for broad access.
+
 ## Legacy Program Notes
 ### LGAPOL01 – Add Policy Transaction
 - Purpose: front-end CICS task for creating a new insurance policy; validates commarea length before delegating persistence to `LGAPDB01`.
