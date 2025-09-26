@@ -141,6 +141,133 @@
 - Error Handling: returns `01` for policy not found, `02` for timestamp mismatch (concurrent update), `90` for SQL errors; includes transaction rollback on failures and comprehensive cursor cleanup.
 - Notes: uses DB2 cursor with FOR UPDATE to lock policy records; validates last-changed timestamp to detect concurrent modifications; updates both main POLICY table and policy-type-specific tables; refreshes timestamp and synchronizes to VSAM on successful completion.
 
+## Phase 4 – Operational Infrastructure & Automation
+
+### CICS Definition JCL (Task 1)
+
+#### ADEF121 – VSAM File Allocation & Population
+- Purpose: comprehensive VSAM cluster setup for GenApp customer and policy data files with initial data loading.
+- Components: defines `KSDSCUST` (customer, 225-byte records, 10-char key) and `KSDSPOLY` (policy, 64-byte records, 21-char key) KSDS clusters.
+- Dependencies: requires `<USRHLQ>`, `<KSDSCUS>`, and `<KSDSPOL>` dataset references; uses SYSDAV volume allocation.
+- Operations: DELETE/DEFINE cycle with conditional data loading via REPRO commands; includes FREESPACE(10,10) for growth management.
+- Error Handling: tolerates MAXCC=8 on delete operations for initial setup scenarios; COND parameters prevent data load on definition failures.
+
+#### CDEF121-125 – CICS Region Definition Series
+- **CDEF121**: TOR (Terminal Oriented Region) configuration with TCPIP support, security disabled, multi-threading (MXT=600), and LE memory limits.
+- **CDEF122**: AOR (Application Oriented Region) with DB2 connectivity, extensive error suppression (XDCT=NO, XFCT=NO), and high-volume transaction processing.
+- **CDEF123**: DOR (Data Oriented Region) specialized for database operations with RLS support, named counter pools, and enhanced storage protection.
+- **CDEF124**: CMAS (CICSPlex System Manager Administration Server) with minimal system resource requirements and focused applicability.
+- **CDEF125**: WUI (Web User Interface) server for browser-based CICS administration with TCPIP ports 6345/6346 and CICSPlex connectivity.
+- Shared Dependencies: all regions require `<CICSHLQ>`, `<CICSLIC>`, `<CPSMHLQ>`, `<CEEHLQ>`, and customized `<USRHLQ>` datasets.
+
+### Compilation JCL (Task 2)
+
+#### COBOL – Enterprise COBOL Compilation Procedure
+- Purpose: standardized DB2-integrated COBOL compilation with CICS preprocessing for all GenApp transaction programs.
+- Process Flow: COBOL compile → DFHEILIA reblock → linkage editor with comprehensive library resolution.
+- Dependencies: Enterprise COBOL compiler (`<COBOLHLQ>`), CICS translator (`<CICSHLQ>`), DB2 precompiler (`<DB2HLQ>`), LE runtime (`<CEEHLQ>`).
+- Compilation Options: NODYNAM, RENT, APOST, CICS enablement, CODEPAGE (`<DB2CCSID>`) for international character support.
+- Target Programs: compiles all 22 GenApp modules including transaction frontends, database services, VSAM handlers, and test utilities.
+
+#### ASMMAP – Assembler Map Compilation
+- Purpose: BMS (Basic Mapping Support) map assembly for CICS screen definitions.
+- Process: assembles `.bms` source into map copybooks and load modules for terminal-based transaction interfaces.
+- Dependencies: CICS assembler libraries, MAPSET generation utilities, load module placement for runtime access.
+
+#### DB2BIND – Database Access Path Optimization
+- Purpose: creates optimized DB2 access paths for all GenApp programs with database connectivity.
+- Components: binds DBRM (Database Request Module) packages for 18 DB2-enabled programs including customer/policy operations and test utilities.
+- Configuration: isolation level CS (Cursor Stability), dynamic SQL rules, CURRENTDATA(NO) for read efficiency, batch and CICS enablement.
+- Dependencies: DB2 system (`<DB2SSID>`), collection (`GENASA1`), and `<DBRMLIX>` library for compiled database request modules.
+
+### Database Setup JCL (Task 3)
+
+#### DB2CRE – Complete Database Schema Creation
+- Purpose: comprehensive GenApp database environment setup including storage groups, databases, tablespaces, tables, indexes, security, and sample data.
+- Schema Components:
+  - **Storage**: GENASG02 storage group with VCAT integration and 7 specialized tablespaces (GENATS01-07) with buffer pool optimization.
+  - **Tables**: CUSTOMER (identity-based), CUSTOMER_SECURE (credential vault), POLICY (master), plus type-specific tables (ENDOWMENT, HOUSE, MOTOR, COMMERCIAL, CLAIM).
+  - **Relationships**: comprehensive foreign key constraints with cascade delete for referential integrity.
+  - **Indexes**: clustered primary indexes plus secondary access paths for customer-to-policy relationships.
+- Sample Data: 10 customers, 10 policies across all types, 2 endowments, 3 houses, 3 motor vehicles, 2 commercial properties.
+- Security: grants all privileges to PUBLIC for development/test environment access.
+
+#### DB2DEL – Database Cleanup Utility
+- Purpose: removes GenApp database objects in proper dependency order for environment refresh or decommissioning.
+- Process: drops tables, tablespaces, database, and storage group with CASCADE options for complete cleanup.
+- Safety: designed for development environments; requires manual verification before production use.
+
+#### DEFDREP/DEFWREP – CPSM Repository Management
+- Purpose: CICSPlex System Manager (CPSM) repository definition and workload management setup.
+- DEFDREP: creates CPSM data repository with appropriate sharing and recovery characteristics.
+- DEFWREP: establishes workload repository for transaction distribution and load balancing across CICS regions.
+
+### Workload Simulation JCL (Task 4)
+
+#### ITPENTR – Interactive Test Environment Setup
+- Purpose: establishes terminal emulation environment for GenApp transaction testing.
+- Components: CICS region startup with terminal definitions and user session management.
+- Dependencies: CICS system datasets, terminal control definitions, user security profiles.
+
+#### ITPLL/ITPSTL – Load Testing Infrastructure
+- Purpose: high-volume transaction load generation and stress testing capabilities.
+- ITPLL: lightweight load driver for sustained transaction volume testing.
+- ITPSTL: sophisticated test scenarios with transaction mix control and performance measurement.
+
+#### SAMPCMA/SAMPWUI/SAMPNCS/SAMPTSQ – Service Component Testing
+- **SAMPCMA**: CICS Management Agent testing for CICSPlex operations and monitoring.
+- **SAMPWUI**: Web User Interface component validation with browser-based admin interface testing.
+- **SAMPNCS**: Named Counter Server testing for customer/policy number generation validation.
+- **SAMPTSQ**: Temporary Storage Queue testing for LGSTSQ logging infrastructure validation.
+
+### Web Service JCL (Task 5 - WSA* Series)
+
+#### Policy Management Web Services
+- **WSAAP01**: Motor, House, Endowment, and Commercial policy ADD operations via SOAP web services using DFHLS2WS converter.
+- **WSAIP01**: comprehensive policy INQUIRY web services with type-specific request/response structures.
+- **WSAUP01**: policy UPDATE operations with optimistic concurrency control via web service interfaces.
+
+#### Customer Management Web Services  
+- **WSAAC01**: customer ADD operations with web service integration for customer onboarding.
+- **WSAIC01**: customer INQUIRY services for customer profile retrieval via web interfaces.
+- **WSAUC01**: customer UPDATE operations maintaining VSAM synchronization through web service calls.
+
+#### Web Service Architecture
+- **WSAVC01/WSAVP01**: VSAM integration web services for customer and policy data synchronization.
+- Technology Stack: IBM CICS Web Services, DFHLS2WS language structure converter, SOAP protocol support.
+- Dependencies: z/OS USS environment (`<ZFSHOME>`), Java runtime, CICS Web Services infrastructure, proxy configuration.
+
+### REXX Automation (Task 6)
+
+#### CUST1.REXX – GenApp Customization Engine
+- Purpose: comprehensive environment-specific customization of all GenApp JCL, scripts, and configuration files.
+- Functionality: 
+  - Variable substitution across 29 configurable parameters (CICS, DB2, COBOL HLQs, system IDs, dataset names).
+  - Automated library allocation for DBRMLIB, MAPCOPY, LOAD, and MSGTXT datasets.
+  - Batch processing of all members in GENAPP.CNTL dataset with MAC1.REXX macro execution.
+  - ISPF dialog integration with variable pool management for interactive customization.
+- Target Scope: processes all JCL members plus WSIM simulation configuration for complete environment setup.
+- Dependencies: ISPF services, TSO ALTLIB for REXX library management, MAC1.REXX macro processor.
+
+#### MAC1.REXX – Template Processing Macro
+- Purpose: ISPF edit macro for systematic parameter substitution across GenApp configuration files.
+- Processing: performs global string replacement for 26+ environment-specific variables (CICS regions, DB2 systems, dataset qualifiers).
+- Integration: called by CUST1.REXX for each member requiring customization; handles both JCL and simulation script templates.
+- Special Handling: renames processed members with @ prefix for deployment readiness, handles ONCICS simulation file specially.
+
+### Installation Automation (Task 7)
+
+#### install.sh – USS Deployment Script
+- Purpose: automated deployment of GenApp components from USS filesystem to z/OS datasets for CICS/DB2 environment setup.
+- Deployment Process:
+  1. **JCL Setup**: allocates and populates `${GENAPP}.CNTL` with all control scripts and procedures.
+  2. **REXX Setup**: deploys customization and automation scripts to `${GENAPP}.EXEC`.
+  3. **Source Setup**: copies COBOL programs, copybooks, BMS maps, and text files to `${GENAPP}.SRC`.
+  4. **Simulation Setup**: installs workload simulation scripts to `${GENAPP}.WSIM`.
+  5. **Data Setup**: creates and loads sample customer/policy datasets with appropriate record formats.
+- Dataset Configuration: automatically determines optimal allocation parameters (LRECL, BLKSIZE, SPACE) for each component type.
+- Dependencies: USS environment with `tsocmd` utility, appropriate TSO/ISPF authority for dataset allocation, connectivity to target z/OS system.
+
 ## Immediate Findings & Questions
 - `install.sh` expects `tsocmd` and USS `cp` with dataset support; confirm environment prerequisites.
 - Customer experience assets hint at established monitoring and test flows; identify current owners.

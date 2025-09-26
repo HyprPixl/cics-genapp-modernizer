@@ -1,5 +1,77 @@
 {
   "nodes": {
+    "ADEF121": {
+      "depends_on": [
+        "KSDSCUST",
+        "KSDSPOLY"
+      ],
+      "description": "VSAM File Allocation & Population JCL - creates KSDSCUST and KSDSPOLY clusters with initial data loading",
+      "type": "jcl"
+    },
+    "ASMMAP": {
+      "depends_on": [
+        "SSMAP"
+      ],
+      "description": "BMS map assembly for CICS screen definitions",
+      "type": "jcl"
+    },
+    "CDEF121": {
+      "depends_on": [],
+      "description": "TOR (Terminal Oriented Region) configuration with TCPIP support and multi-threading",
+      "type": "jcl"
+    },
+    "CDEF122": {
+      "depends_on": [],
+      "description": "AOR (Application Oriented Region) with DB2 connectivity and transaction processing",
+      "type": "jcl"
+    },
+    "CDEF123": {
+      "depends_on": [],
+      "description": "DOR (Data Oriented Region) for database operations with RLS support",
+      "type": "jcl"
+    },
+    "CDEF124": {
+      "depends_on": [],
+      "description": "CMAS (CICSPlex Administration Server) configuration",
+      "type": "jcl"
+    },
+    "CDEF125": {
+      "depends_on": [],
+      "description": "WUI (Web User Interface) server for browser-based CICS administration",
+      "type": "jcl"
+    },
+    "COBOL": {
+      "depends_on": [
+        "LGACDB01",
+        "LGACDB02",
+        "LGACUS01",
+        "LGACVS01",
+        "LGAPDB01",
+        "LGAPOL01",
+        "LGAPVS01",
+        "LGASTAT1",
+        "LGDPDB01",
+        "LGDPOL01",
+        "LGDPVS01",
+        "LGICDB01",
+        "LGICUS01",
+        "LGICVS01",
+        "LGIPDB01",
+        "LGIPOL01",
+        "LGIPVS01",
+        "LGSETUP",
+        "LGSTSQ"
+      ],
+      "description": "Enterprise COBOL compilation procedure with CICS and DB2 preprocessing",
+      "type": "jcl"
+    },
+    "CUST1.REXX": {
+      "depends_on": [
+        "MAC1.REXX"
+      ],
+      "description": "GenApp customization engine for environment-specific parameter substitution",
+      "type": "rexx"
+    },
     "DB2.COMMERCIAL": {
       "depends_on": [],
       "description": "Commercial policy extension",
@@ -34,6 +106,69 @@
       "depends_on": [],
       "description": "Core policy header table",
       "type": "db2-table"
+    },
+    "DB2BIND": {
+      "depends_on": [
+        "DB2SSID",
+        "DBRMLIB"
+      ],
+      "description": "DB2 access path optimization for all database-enabled programs",
+      "type": "jcl"
+    },
+    "DB2CRE": {
+      "depends_on": [
+        "DB2PLAN",
+        "DB2SSID"
+      ],
+      "description": "Complete GenApp database schema creation with sample data",
+      "type": "jcl"
+    },
+    "DB2DEL": {
+      "depends_on": [
+        "DB2SSID"
+      ],
+      "description": "Database cleanup utility for environment refresh",
+      "type": "jcl"
+    },
+    "DB2PLAN": {
+      "depends_on": [],
+      "description": null,
+      "type": null
+    },
+    "DB2SSID": {
+      "depends_on": [],
+      "description": null,
+      "type": null
+    },
+    "DBRMLIB": {
+      "depends_on": [],
+      "description": null,
+      "type": null
+    },
+    "DEFDREP": {
+      "depends_on": [],
+      "description": "CPSM data repository definition",
+      "type": "jcl"
+    },
+    "DEFWREP": {
+      "depends_on": [],
+      "description": "CPSM workload repository setup",
+      "type": "jcl"
+    },
+    "ITPENTR": {
+      "depends_on": [],
+      "description": "Interactive test environment setup for terminal emulation",
+      "type": "jcl"
+    },
+    "ITPLL": {
+      "depends_on": [],
+      "description": "Lightweight load driver for transaction volume testing",
+      "type": "jcl"
+    },
+    "ITPSTL": {
+      "depends_on": [],
+      "description": "Sophisticated test scenarios with transaction mix control",
+      "type": "jcl"
     },
     "KSDSCUST": {
       "depends_on": [],
@@ -115,6 +250,11 @@
       "description": "VSAM writer for policy records",
       "type": "cobol"
     },
+    "LGASTAT1": {
+      "depends_on": [],
+      "description": null,
+      "type": null
+    },
     "LGCMAREA": {
       "depends_on": [],
       "description": "Shared commarea layout",
@@ -167,6 +307,11 @@
       "description": "Inquire customer front-end program",
       "type": "cobol"
     },
+    "LGICVS01": {
+      "depends_on": [],
+      "description": null,
+      "type": null
+    },
     "LGIPDB01": {
       "depends_on": [
         "DB2.COMMERCIAL",
@@ -190,10 +335,20 @@
       "description": "Inquire policy front-end program",
       "type": "cobol"
     },
+    "LGIPVS01": {
+      "depends_on": [],
+      "description": null,
+      "type": null
+    },
     "LGPOLICY": {
       "depends_on": [],
       "description": "Embedded SQL host variable definitions",
       "type": "sql-include"
+    },
+    "LGSETUP": {
+      "depends_on": [],
+      "description": null,
+      "type": null
     },
     "LGSTSQ": {
       "depends_on": [],
@@ -260,6 +415,133 @@
       ],
       "description": "Update policy VSAM service",
       "type": "cobol"
+    },
+    "MAC1.REXX": {
+      "depends_on": [],
+      "description": "ISPF edit macro for systematic parameter substitution",
+      "type": "rexx"
+    },
+    "SAMPCMA": {
+      "depends_on": [],
+      "description": "CICS Management Agent testing for CICSPlex operations",
+      "type": "jcl"
+    },
+    "SAMPNCS": {
+      "depends_on": [],
+      "description": "Named Counter Server testing for number generation",
+      "type": "jcl"
+    },
+    "SAMPTSQ": {
+      "depends_on": [
+        "LGSTSQ"
+      ],
+      "description": "Temporary Storage Queue testing for LGSTSQ validation",
+      "type": "jcl"
+    },
+    "SAMPWUI": {
+      "depends_on": [
+        "CDEF125"
+      ],
+      "description": "Web User Interface component validation",
+      "type": "jcl"
+    },
+    "SOAIC01": {
+      "depends_on": [],
+      "description": null,
+      "type": null
+    },
+    "SOAIPB1": {
+      "depends_on": [],
+      "description": null,
+      "type": null
+    },
+    "SOAIPE1": {
+      "depends_on": [],
+      "description": null,
+      "type": null
+    },
+    "SOAIPH1": {
+      "depends_on": [],
+      "description": null,
+      "type": null
+    },
+    "SOAIPM1": {
+      "depends_on": [],
+      "description": null,
+      "type": null
+    },
+    "SSMAP": {
+      "depends_on": [],
+      "description": null,
+      "type": null
+    },
+    "WSAAC01": {
+      "depends_on": [
+        "LGACUS01",
+        "SOAIC01"
+      ],
+      "description": "Customer ADD operations web service integration",
+      "type": "jcl"
+    },
+    "WSAAP01": {
+      "depends_on": [
+        "LGAPOL01",
+        "SOAIPB1",
+        "SOAIPE1",
+        "SOAIPH1",
+        "SOAIPM1"
+      ],
+      "description": "Policy ADD operations via SOAP web services",
+      "type": "jcl"
+    },
+    "WSAIC01": {
+      "depends_on": [
+        "LGICUS01",
+        "SOAIC01"
+      ],
+      "description": "Customer INQUIRY services for web interfaces",
+      "type": "jcl"
+    },
+    "WSAIP01": {
+      "depends_on": [
+        "LGIPOL01"
+      ],
+      "description": "Policy INQUIRY web services with type-specific structures",
+      "type": "jcl"
+    },
+    "WSAUC01": {
+      "depends_on": [
+        "LGUCUS01",
+        "SOAIC01"
+      ],
+      "description": "Customer UPDATE operations via web services",
+      "type": "jcl"
+    },
+    "WSAUP01": {
+      "depends_on": [
+        "LGUPOL01"
+      ],
+      "description": "Policy UPDATE operations via web service interfaces",
+      "type": "jcl"
+    },
+    "WSAVC01": {
+      "depends_on": [
+        "LGACVS01"
+      ],
+      "description": "Customer VSAM integration web services",
+      "type": "jcl"
+    },
+    "WSAVP01": {
+      "depends_on": [
+        "LGAPVS01"
+      ],
+      "description": "Policy VSAM integration web services",
+      "type": "jcl"
+    },
+    "install.sh": {
+      "depends_on": [],
+      "description": "USS deployment script for GenApp components to z/OS datasets",
+      "type": "script"
     }
   }
 }

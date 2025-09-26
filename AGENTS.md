@@ -12,6 +12,14 @@
   - Policy database services: `LGDPDB01` (delete), `LGIPDB01` (inquire), `LGUPDB01` (update) with corresponding VSAM sync services
   - Customer database services: `LGICDB01` (inquire), `LGUCDB01` (update), `LGACDB02` (security) with VSAM coordination
   - All database services follow consistent patterns: DB2 operations, VSAM synchronization, comprehensive error handling via `LGSTSQ`
+- **PHASE 4 COMPLETE:** Documented all operational infrastructure and automation components:
+  - CICS definition JCL: `ADEF121` (VSAM), `CDEF121-125` (TOR/AOR/DOR/CMAS/WUI regions) for complete environment setup
+  - Compilation JCL: `COBOL` (Enterprise COBOL), `ASMMAP` (BMS maps), `DB2BIND` (access path optimization) for build processes
+  - Database setup JCL: `DB2CRE` (schema creation), `DB2DEL` (cleanup), `DEFDREP/DEFWREP` (CPSM repositories) for data management
+  - Workload simulation JCL: `ITPENTR/ITPLL/ITPSTL` (load testing), `SAMPCMA/SAMPWUI/SAMPNCS/SAMPTSQ` (component testing) for quality assurance
+  - Web service JCL: `WSA*` series covering SOAP-based policy and customer operations with VSAM synchronization
+  - REXX automation: `CUST1.REXX` (environment customization), `MAC1.REXX` (parameter substitution) for deployment flexibility
+  - Installation automation: `install.sh` (USS-to-dataset deployment) for streamlined environment provisioning
 
 ## Dependency Notes
 - `LGAPOL01` depends on `LGAPDB01` (database insert logic), `LGSTSQ` (TDQ logging helper), and the `LGCMAREA` copybook.
@@ -22,7 +30,9 @@
 - All transaction programs share error logging through `LGSTSQ` and use `LGCMAREA` for consistent commarea structure.
 - **Phase 2 Database Service Dependencies:** All database backend services (`*DB01`) depend on DB2 tables, corresponding VSAM sync services (`*VS01`), shared copybooks (`LGCMAREA`, `LGPOLICY`), and error logging (`LGSTSQ`).
 - **Database-VSAM Synchronization Pattern:** Policy services sync to `KSDSPOLY`, customer services sync to `KSDSCUST`; all VSAM services depend on `LGCMAREA` and `LGSTSQ`.
-- **Customer Security Integration:** `LGACDB01` coordinates with `LGACDB02` for secure credential management in `CUSTOMER_SECURE` table.
+- **Phase 4 Operational Infrastructure Dependencies:** All operational JCL depends on environment-specific configuration via `CUST1.REXX`/`MAC1.REXX`; CICS regions depend on appropriate HLQ datasets; compilation jobs require all source programs; database setup creates foundation for all transaction operations.
+- **Web Service Integration Pattern:** WSA* series JCL integrates COBOL transaction programs with SOAP web services using DFHLS2WS converter; maintains dependency on corresponding transaction programs and SOA interface copybooks.
+- **Environment Provisioning Flow:** `install.sh` → `CUST1.REXX` → compilation JCL → database setup → CICS definitions → web services → simulation testing provides complete deployment sequence.
 
 ## Tooling
 - Dependency graph helper lives at `tools/dep_graph.py`; default store is `dependency_graph.json`.
@@ -41,14 +51,14 @@
   - **Phase 3 Task 3:** Document SOA interface copybooks (`SOAIC01`, `SOAIPB1`, `SOAIPE1`, `SOAIPH1`, `SOAIPM1`) - service interfaces
   - **Phase 3 Task 4:** Document SOA data copybooks (`SOAVCII`, `SOAVCIO`, `SOAVPII`, `SOAVPIO`) - service data exchange
   - **Phase 3 Task 5:** Document BMS maps (`SSMAP.bms`) - screen layouts and field definitions
-- **Phase 4 – Ops & Automation (parallel):** While COBOL review continues, inventory operational artifacts and cross-link to program dependencies.
-  - **Phase 4 Task 1:** Document CICS definition JCL (`ADEF121`, `CDEF121-125`) - transaction and program definitions
-  - **Phase 4 Task 2:** Document compilation JCL (`COBOL`, `ASMMAP`, `DB2BIND`) - build and deployment jobs
-  - **Phase 4 Task 3:** Document database setup JCL (`DB2CRE`, `DB2DEL`, `DEFDREP`, `DEFWREP`) - data management jobs
-  - **Phase 4 Task 4:** Document workload simulation JCL (`ITPENTR`, `ITPLL`, `ITPSTL`, `SAMPCMA`, `SAMPNCS`, `SAMPTSQ`, `SAMPWUI`) - testing infrastructure
-  - **Phase 4 Task 5:** Document web service JCL (`WSA*` series) - service automation jobs
-  - **Phase 4 Task 6:** Document REXX automation (`CUST1.REXX`, `MAC1.REXX`) - operational scripts
-  - **Phase 4 Task 7:** Document installation automation (`install.sh`) - deployment and setup processes
+- **Phase 4 – Ops & Automation (parallel):** ✅ **COMPLETE** - All operational artifacts documented and cross-linked to program dependencies.
+  - **Phase 4 Task 1:** ✅ Document CICS definition JCL (`ADEF121`, `CDEF121-125`) - transaction and program definitions
+  - **Phase 4 Task 2:** ✅ Document compilation JCL (`COBOL`, `ASMMAP`, `DB2BIND`) - build and deployment jobs
+  - **Phase 4 Task 3:** ✅ Document database setup JCL (`DB2CRE`, `DB2DEL`, `DEFDREP`, `DEFWREP`) - data management jobs
+  - **Phase 4 Task 4:** ✅ Document workload simulation JCL (`ITPENTR`, `ITPLL`, `ITPSTL`, `SAMPCMA`, `SAMPNCS`, `SAMPTSQ`, `SAMPWUI`) - testing infrastructure
+  - **Phase 4 Task 5:** ✅ Document web service JCL (`WSA*` series) - service automation jobs
+  - **Phase 4 Task 6:** ✅ Document REXX automation (`CUST1.REXX`, `MAC1.REXX`) - operational scripts
+  - **Phase 4 Task 7:** ✅ Document installation automation (`install.sh`) - deployment and setup processes
 - **Phase 5 – Data & Simulation (parallel):** In parallel with ops review, analyze test data and simulation assets.
   - **Phase 5 Task 1:** Document sample datasets (`KSDSCUST.TXT`, `KSDSPOLY.TXT`) - customer and policy test data
   - **Phase 5 Task 2:** Document simulation configuration (`GENAPP.TXT`, `#SSVARS.TXT`) - workload simulator setup
