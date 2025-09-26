@@ -1,5 +1,30 @@
 {
   "nodes": {
+    "#SSVARS": {
+      "depends_on": [],
+      "description": null,
+      "type": null
+    },
+    "CCOLOR": {
+      "depends_on": [],
+      "description": "Car color lookup table - MSGUTBL for vehicle color choices in simulation (Blue, Purple, Beige, Grey, Orange, etc.)",
+      "type": "reference_data"
+    },
+    "CMAKE": {
+      "depends_on": [],
+      "description": "Car make lookup table - MSGUTBL for vehicle manufacturers in simulation (Ford, Mazda, Honda, Cadillac, Ferrari, etc.)",
+      "type": "reference_data"
+    },
+    "CMODEL": {
+      "depends_on": [],
+      "description": "Car model lookup table - MSGUTBL for vehicle models in simulation (205, Twinkle, 911, Riva, Omega, Fiesta, etc.)",
+      "type": "reference_data"
+    },
+    "CTYPE": {
+      "depends_on": [],
+      "description": "Coverage type lookup table - MSGUTBL for insurance coverage types (Theft, Fire, Accident, Water Damage, Subsidence, etc.)",
+      "type": "reference_data"
+    },
     "DB2.COMMERCIAL": {
       "depends_on": [],
       "description": "Commercial policy extension",
@@ -34,6 +59,16 @@
       "depends_on": [],
       "description": "Core policy header table",
       "type": "db2-table"
+    },
+    "FNAME": {
+      "depends_on": [],
+      "description": "First names lookup table - MSGUTBL for customer first names in simulation (Adrian, John, Robert, Michael, William, etc.)",
+      "type": "reference_data"
+    },
+    "HTYPE": {
+      "depends_on": [],
+      "description": "House type lookup table - MSGUTBL for residential property types (Detached, Semi, Bungalow, Flat, Apartment, Farm, etc.)",
+      "type": "reference_data"
     },
     "KSDSCUST": {
       "depends_on": [],
@@ -167,6 +202,11 @@
       "description": "Inquire customer front-end program",
       "type": "cobol"
     },
+    "LGICVS01": {
+      "depends_on": [],
+      "description": null,
+      "type": null
+    },
     "LGIPDB01": {
       "depends_on": [
         "DB2.COMMERCIAL",
@@ -260,6 +300,60 @@
       ],
       "description": "Update policy VSAM service",
       "type": "cobol"
+    },
+    "PCODE": {
+      "depends_on": [],
+      "description": "Postal code lookup table - MSGUTBL for UK postal codes in simulation (AB239AB, AB239AF, AB259AB, AB309AA, etc.)",
+      "type": "reference_data"
+    },
+    "PTYPE": {
+      "depends_on": [],
+      "description": "Property type lookup table - MSGUTBL for commercial property types (Office, Shop, Retail, Warehouse, Wholesale, etc.)",
+      "type": "reference_data"
+    },
+    "RTYPE": {
+      "depends_on": [],
+      "description": "Road type lookup table - MSGUTBL for address street types (Road, RD, Street, ST, Avenue, AVE, Close, CL)",
+      "type": "reference_data"
+    },
+    "SNAME": {
+      "depends_on": [],
+      "description": "Surname lookup table - MSGUTBL for customer surnames in simulation (Smith, Jones, Taylor, Williams, Brown, etc.)",
+      "type": "reference_data"
+    },
+    "SSC1A2": {
+      "depends_on": [],
+      "description": null,
+      "type": null
+    },
+    "WASerror": {
+      "depends_on": [],
+      "description": null,
+      "type": null
+    },
+    "WSC1A1": {
+      "depends_on": [
+        "#SSVARS",
+        "SSC1A2",
+        "WASerror"
+      ],
+      "description": "SOAP customer add simulation script - generates SOAP envelope and HTTP request for LGACUS01 web service testing using synthetic customer data",
+      "type": "web_service_simulation"
+    },
+    "WSC1I1": {
+      "depends_on": [
+        "#SSVARS",
+        "WASerror"
+      ],
+      "description": "SOAP customer inquiry simulation script - generates SOAP envelope and HTTP request for LGICUS01 web service testing with random customer number generation",
+      "type": "web_service_simulation"
+    },
+    "WSLGCF": {
+      "depends_on": [
+        "LGICVS01"
+      ],
+      "description": "Customer validation web service simulation - fetches valid customer numbers via LGICVS01 service with error handling and response parsing",
+      "type": "web_service_simulation"
     }
   }
 }
