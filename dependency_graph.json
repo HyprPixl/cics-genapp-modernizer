@@ -1,0 +1,28 @@
+{
+  "nodes": {
+    "LGAPDB01": {
+      "depends_on": [],
+      "description": null,
+      "type": null
+    },
+    "LGAPOL01": {
+      "depends_on": [
+        "LGAPDB01",
+        "LGCMAREA",
+        "LGSTSQ"
+      ],
+      "description": "Add policy front-end program",
+      "type": "cobol"
+    },
+    "LGCMAREA": {
+      "depends_on": [],
+      "description": null,
+      "type": null
+    },
+    "LGSTSQ": {
+      "depends_on": [],
+      "description": null,
+      "type": null
+    }
+  }
+}
