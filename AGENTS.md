@@ -2,6 +2,7 @@
 
 ## Progress Log
 - Documented `LGAPOL01` (Add Policy COBOL program) and captured dependencies in the README and dependency graph store.
+- Drafted documentation roadmap with sequencing and parallel work suggestions.
 
 ## Dependency Notes
 - `LGAPOL01` depends on `LGAPDB01` (database insert logic), `LGSTSQ` (TDQ logging helper), and the `LGCMAREA` copybook.
@@ -13,3 +14,15 @@
 - Inspect a node: `./tools/dep_graph.py show <NAME> --include-dependents`.
 - List nodes (optionally by type): `./tools/dep_graph.py list --type cobol`.
 - Review dependents of a component: `./tools/dep_graph.py dependents <NAME>`.
+
+## Work Sequencing
+- **Phase 1 – Core Transactions (serial):** Continue through customer and policy front-end programs (`LGAPOL01`, `LGAPVS01`, `LGACUS01`, etc.), pairing each with its backing DB module so request/response flows stay consistent.
+- **Phase 2 – Data Services (serial):** Document batch/database utilities (`LGAPDB01`, `LGDPDB01`, `LGIPDB01`, `LGUCDB01`) and shared logging (`LGSTSQ`) once their callers are understood.
+- **Phase 3 – Shared Assets (parallel):** Tackle copybooks (`LGCMAREA`, `POLLOOK`, `POLLOO2`, `SOA*`) and BMS maps (`SSMAP.bms`) alongside transaction work; these can be owned by a separate teammate with ongoing updates.
+- **Phase 4 – Ops & Automation (parallel):** While COBOL review continues, another stream can inventory JCL in `base/cntl/`, REXX execs, and `install.sh`, cross-linking jobs to program compile/deploy steps.
+- **Phase 5 – Data & Simulation (parallel):** In parallel with ops review, analyze `base/data/` datasets and `base/wsim/` scripts, documenting how they support test scenarios and customer journeys.
+
+## Parallelization Notes
+- Pair front-end and back-end COBOL modules in the same lane to avoid re-reading shared commareas.
+- Assign separate owners for shared copybooks/maps and for infrastructure artifacts (JCL/REXX/data) so updates proceed without blocking the core transaction walkthrough.
+- Revisit the dependency graph after each phase to confirm cross-stream updates stay synchronized.
