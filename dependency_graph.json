@@ -115,6 +115,13 @@
       "description": "VSAM writer for policy records",
       "type": "cobol"
     },
+    "LGASTAT1": {
+      "depends_on": [
+        "LGCMAREA"
+      ],
+      "description": "Event-driven statistics collection service - collects transaction counters and performance metrics via CICS events and containers",
+      "type": "cobol"
+    },
     "LGCMAREA": {
       "depends_on": [],
       "description": "Shared commarea layout",
@@ -195,9 +202,57 @@
       "description": "Embedded SQL host variable definitions",
       "type": "sql-include"
     },
+    "LGSETUP": {
+      "depends_on": [],
+      "description": "Database setup and control utility - initializes customer number ranges and resets CICS transaction counters for testing",
+      "type": "cobol"
+    },
     "LGSTSQ": {
       "depends_on": [],
       "description": "TDQ logger for diagnostics",
+      "type": "cobol"
+    },
+    "LGTESTC1": {
+      "depends_on": [
+        "LGACUS01",
+        "LGCMAREA",
+        "LGICUS01",
+        "LGUCUS01",
+        "SSMAP"
+      ],
+      "description": "Customer transaction test menu interface - provides BMS-based testing UI for customer operations (add, inquire, update)",
+      "type": "cobol"
+    },
+    "LGTESTP1": {
+      "depends_on": [
+        "LGCMAREA",
+        "SSMAP"
+      ],
+      "description": "Motor policy transaction test menu interface - provides BMS-based testing UI for motor policy operations",
+      "type": "cobol"
+    },
+    "LGTESTP2": {
+      "depends_on": [
+        "LGCMAREA",
+        "SSMAP"
+      ],
+      "description": "Endowment policy transaction test menu interface - provides BMS-based testing UI for endowment policy operations",
+      "type": "cobol"
+    },
+    "LGTESTP3": {
+      "depends_on": [
+        "LGCMAREA",
+        "SSMAP"
+      ],
+      "description": "House policy transaction test menu interface - provides BMS-based testing UI for house policy operations",
+      "type": "cobol"
+    },
+    "LGTESTP4": {
+      "depends_on": [
+        "LGCMAREA",
+        "SSMAP"
+      ],
+      "description": "Commercial policy transaction test menu interface - provides BMS-based testing UI for commercial policy operations",
       "type": "cobol"
     },
     "LGUCDB01": {
@@ -260,6 +315,16 @@
       ],
       "description": "Update policy VSAM service",
       "type": "cobol"
+    },
+    "LGWEBST5": {
+      "depends_on": [],
+      "description": "Web statistics collector service - queries CICS transaction counters, calculates performance metrics, and publishes real-time statistics via HTTP templates",
+      "type": "cobol"
+    },
+    "SSMAP": {
+      "depends_on": [],
+      "description": null,
+      "type": null
     }
   }
 }

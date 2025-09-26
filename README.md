@@ -141,6 +141,41 @@
 - Error Handling: returns `01` for policy not found, `02` for timestamp mismatch (concurrent update), `90` for SQL errors; includes transaction rollback on failures and comprehensive cursor cleanup.
 - Notes: uses DB2 cursor with FOR UPDATE to lock policy records; validates last-changed timestamp to detect concurrent modifications; updates both main POLICY table and policy-type-specific tables; refreshes timestamp and synchronizes to VSAM on successful completion.
 
+### LGASTAT1 – Event-Driven Statistics Collection Service
+- Purpose: event-driven statistics collector that processes CICS transaction events and maintains performance counters; triggered by business events and containers to track transaction throughput and success rates.
+- Interfaces: accepts data via CICS event containers (`DFHEP.DATA.00001`, `DFHEP.DATA.00002`) or traditional commarea via `LGCMAREA`; normalizes various transaction types for consistent counter naming.
+- Dependencies: CICS named counters pool (`GENA`), temporary storage queues (`GENASTRT`), `LGCMAREA` copybook, CICS event processing commands (`GET CONTAINER`, `GET COUNTER`).
+- Error Handling: gracefully handles missing containers by falling back to commarea processing; normalizes return codes (`02ACUS` → `01ACUS`, non-`00` codes → `99`) to consolidate error statistics.
+- Notes: maintains startup timestamp in TSQ; consolidates inquiry transaction types (`02ICOM`, `03ICOM`, `05ICOM`) into single counter for simpler reporting; designed for high-frequency invocation without user interaction.
+
+### LGSETUP – Database Setup and Control Utility  
+- Purpose: initialization utility that configures customer number ranges and resets all CICS transaction counters for testing scenarios; establishes baseline state for workload simulation.
+- Interfaces: accepts high customer number via terminal input or commarea; writes control messages to temporary storage queues for simulator consumption.
+- Dependencies: CICS named counters in pool `GENA`, temporary storage queues (`GENACNTL`, `GENAERRS`, `GENASTRT`, `GENASTAT`), CICS terminal and TSQ commands.
+- Error Handling: tolerates missing counters during delete operations; creates comprehensive counter infrastructure covering all transaction types (customers, policies by type, success/error tracking).
+- Notes: defines 200+ individual counters for granular transaction tracking; sets customer number range from 1 to specified maximum; clears all diagnostic queues to provide clean test environment; essential prerequisite for workload simulation scenarios.
+
+### LGTESTC1 – Customer Transaction Test Menu
+- Purpose: BMS-based test interface for customer operations providing manual testing capabilities for add, inquire, and update customer transactions.
+- Interfaces: uses BMS map `SSMAPC1` from `SSMAP` mapset for screen interaction; processes customer numbers and options via form fields; delegates business logic to customer transaction programs.
+- Dependencies: `SSMAP` BMS mapset, `LGCMAREA` copybook, customer transaction programs (`LGICUS01`, `LGACUS01`, `LGUCUS01`), CICS BMS commands (`SEND MAP`, `RECEIVE MAP`).
+- Error Handling: handles AID keys (CLEAR, PF3) for session termination; validates user input and displays results from called customer programs; provides interactive error feedback.
+- Notes: supports full customer lifecycle testing through single interface; maintains conversational state across map exchanges; designed for QA and development testing workflows.
+
+### LGTESTP1-P4 – Policy Transaction Test Menus
+- Purpose: specialized BMS-based test interfaces for each policy type (motor, endowment, house, commercial) providing comprehensive policy testing capabilities.
+- Interfaces: each uses corresponding BMS maps (`SSMAPP1`, `SSMAPP2`, `SSMAPP3`, `SSMAPP4`) for policy-specific field layouts; processes policy numbers, customer numbers, and policy-specific attributes.
+- Dependencies: `SSMAP` BMS mapset, `LGCMAREA` copybook, policy transaction programs (varies by test program), CICS BMS and terminal handling commands.
+- Error Handling: consistent AID key handling across all policy test programs; displays transaction results and error messages; maintains form state for iterative testing.
+- Notes: `LGTESTP1` handles motor policies with coverage/premium fields; `LGTESTP2` covers endowment policies; `LGTESTP3` manages house policies; `LGTESTP4` processes commercial policies; enables isolated testing of each policy type's unique business rules.
+
+### LGWEBST5 – Web Statistics Collector Service
+- Purpose: real-time statistics collector that queries CICS transaction counters, calculates performance metrics, and publishes data via HTTP templates for web-based monitoring dashboards.
+- Interfaces: operates as CICS web service program responding to HTTP requests; uses HTML templates (`GENAST3TEMP`) for formatted output; publishes statistics via TCP service `SSISTAT1`.
+- Dependencies: CICS named counters pool (`GENA`), temporary storage queues for intermediate calculations, CICS web support commands (`SEND TEXT`, TCP services), HTML template processing.
+- Error Handling: handles counter query failures gracefully; maintains previous values when counters unavailable; includes comprehensive rate calculations with time-based intervals for trend analysis.
+- Notes: calculates transaction rates per minute/hour; aggregates success/error ratios across all transaction types; provides real-time visibility into system performance; refreshes statistics every 60 seconds for live monitoring; formats output for web consumption with proper HTTP headers and MIME types.
+
 ## Immediate Findings & Questions
 - `install.sh` expects `tsocmd` and USS `cp` with dataset support; confirm environment prerequisites.
 - Customer experience assets hint at established monitoring and test flows; identify current owners.

@@ -10,7 +10,9 @@
   - All front-end programs follow consistent patterns: commarea validation, request ID checking, backend delegation, error logging via `LGSTSQ`
 - **PHASE 2 COMPLETE:** Documented all remaining database backend services and their data dependencies:
   - Policy database services: `LGDPDB01` (delete), `LGIPDB01` (inquire), `LGUPDB01` (update) with corresponding VSAM sync services
-  - Customer database services: `LGICDB01` (inquire), `LGUCDB01` (update), `LGACDB02` (security) with VSAM coordination
+  - Customer database services: `LGICDB01` (inquire), `LGUCDB01` (update), `LGACDB02` (security) with VSAM coordination  
+  - Database utilities: `LGASTAT1` (event-driven statistics), `LGSETUP` (setup and counter initialization)
+  - Test and web services: `LGTESTC1` (customer test menu), `LGTESTP1-P4` (policy test menus), `LGWEBST5` (web statistics collector)
   - All database services follow consistent patterns: DB2 operations, VSAM synchronization, comprehensive error handling via `LGSTSQ`
 
 ## Dependency Notes
@@ -23,6 +25,9 @@
 - **Phase 2 Database Service Dependencies:** All database backend services (`*DB01`) depend on DB2 tables, corresponding VSAM sync services (`*VS01`), shared copybooks (`LGCMAREA`, `LGPOLICY`), and error logging (`LGSTSQ`).
 - **Database-VSAM Synchronization Pattern:** Policy services sync to `KSDSPOLY`, customer services sync to `KSDSCUST`; all VSAM services depend on `LGCMAREA` and `LGSTSQ`.
 - **Customer Security Integration:** `LGACDB01` coordinates with `LGACDB02` for secure credential management in `CUSTOMER_SECURE` table.
+- **Phase 2 Database Utilities:** `LGASTAT1` provides event-driven statistics collection using CICS containers and counters; `LGSETUP` initializes customer ranges and resets all transaction counters for testing scenarios.
+- **Phase 2 Test Infrastructure:** `LGTESTC1` provides customer testing UI; `LGTESTP1-P4` handle policy type-specific testing (motor, endowment, house, commercial); all test programs use `SSMAP` BMS mapset and `LGCMAREA` structures.
+- **Phase 2 Web Services:** `LGWEBST5` collects real-time statistics from CICS counters and publishes via HTTP templates for web monitoring dashboards.
 
 ## Tooling
 - Dependency graph helper lives at `tools/dep_graph.py`; default store is `dependency_graph.json`.
@@ -35,6 +40,8 @@
 ## Work Sequencing
 - **Phase 1 – Core Transactions (serial):** Continue through customer and policy front-end programs (`LGAPOL01`, `LGAPVS01`, `LGACUS01`, etc.), pairing each with its backing DB module so request/response flows stay consistent.
 - **Phase 2 – Data Services (serial):** Document batch/database utilities (`LGAPDB01`, `LGDPDB01`, `LGIPDB01`, `LGUCDB01`) and shared logging (`LGSTSQ`) once their callers are understood.
+  - **Phase 2 Task 6:** ✅ Document database utilities (`LGASTAT1`, `LGSETUP`) - statistics collection and setup services
+  - **Phase 2 Task 7:** ✅ Document test and web service programs (`LGTESTC1`, `LGTESTP1`, `LGTESTP2`, `LGTESTP3`, `LGTESTP4`, `LGWEBST5`) - testing infrastructure and web statistics
 - **Phase 3 – Shared Assets (parallel):** Tackle copybooks and BMS maps alongside transaction work; these can be owned by separate teammates with ongoing updates.
   - **Phase 3 Task 1:** Document core copybooks (`LGCMAREA`, `LGPOLICY`) - shared data structures
   - **Phase 3 Task 2:** Document lookup copybooks (`POLLOOK`, `POLLOO2`) - reference data structures  
