@@ -33,6 +33,10 @@
 - **Phase 4 Operational Infrastructure Dependencies:** All operational JCL depends on environment-specific configuration via `CUST1.REXX`/`MAC1.REXX`; CICS regions depend on appropriate HLQ datasets; compilation jobs require all source programs; database setup creates foundation for all transaction operations.
 - **Web Service Integration Pattern:** WSA* series JCL integrates COBOL transaction programs with SOAP web services using DFHLS2WS converter; maintains dependency on corresponding transaction programs and SOA interface copybooks.
 - **Environment Provisioning Flow:** `install.sh` → `CUST1.REXX` → compilation JCL → database setup → CICS definitions → web services → simulation testing provides complete deployment sequence.
+- **Phase 5 Data & Simulation Dependencies:** Sample datasets (`KSDSCUST.TXT`, `KSDSPOLY.TXT`) provide test data for corresponding VSAM programs; simulation configuration (`GENAPP.TXT`, `#SSVARS.TXT`) defines workload parameters and shared variables for all transaction scripts; all simulation scripts depend on `#SSVARS.TXT` and appropriate UTBL reference tables for realistic data generation.
+- **Simulation Script Architecture:** Transaction simulation scripts (`SSC1*`, `SSP1*-SSP4*`) follow modular design with A1 scripts handling transaction flows and A2 modules providing data generation; all scripts integrate with COBOL backend programs and support comprehensive error tracking via consistent counter naming.
+- **Web Service Simulation Pattern:** SOAP simulation scripts (`WSC1*`, `WSLGCF`) generate complete HTTP requests with proper headers and XML payloads; depend on `WASERROR` for standardized error handling and response parsing; target specific GenApp web service endpoints for customer and policy operations.
+- **CICS Monitoring Integration:** Event processing configuration (`Transaction_Counters.evbind`) captures business transaction metrics from all GenApp programs (LG* series); coordinates with statistics collection programs (`LGASTAT1`, `LGWEBST5`) and transaction `LGST` for real-time monitoring and performance tracking.
 
 ## Tooling
 - Dependency graph helper lives at `tools/dep_graph.py`; default store is `dependency_graph.json`.
@@ -59,14 +63,14 @@
   - **Phase 4 Task 5:** ✅ Document web service JCL (`WSA*` series) - service automation jobs
   - **Phase 4 Task 6:** ✅ Document REXX automation (`CUST1.REXX`, `MAC1.REXX`) - operational scripts
   - **Phase 4 Task 7:** ✅ Document installation automation (`install.sh`) - deployment and setup processes
-- **Phase 5 – Data & Simulation (parallel):** In parallel with ops review, analyze test data and simulation assets.
-  - **Phase 5 Task 1:** Document sample datasets (`KSDSCUST.TXT`, `KSDSPOLY.TXT`) - customer and policy test data
-  - **Phase 5 Task 2:** Document simulation configuration (`GENAPP.TXT`, `#SSVARS.TXT`) - workload simulator setup
-  - **Phase 5 Task 3:** Document transaction simulation scripts (`SSC1*`, `SSP1*`, `SSP2*`, `SSP3*`, `SSP4*`) - individual transaction flows
-  - **Phase 5 Task 4:** Document web service simulation (`WSC1*`, `WSLGCF`) - web interface test scenarios
-  - **Phase 5 Task 5:** Document reference data files (`CCOLOR`, `CMAKE`, `CMODEL`, `CTYPE`, `FNAME`, `HTYPE`, `PCODE`, `PTYPE`, `RTYPE`, `SNAME`) - lookup tables and validation data
-  - **Phase 5 Task 6:** Document error and control flows (`ONCICS`, `STOP`, `WASERROR`) - simulation control and exception handling
-  - **Phase 5 Task 7:** Document event bindings (`Transaction_Counters.evbind`) - CICS monitoring configuration
+- **Phase 5 – Data & Simulation (parallel):** ✅ **COMPLETE** - All data and simulation assets documented with comprehensive dependency tracking.
+  - **Phase 5 Task 1:** ✅ Document sample datasets (`KSDSCUST.TXT`, `KSDSPOLY.TXT`) - customer and policy test data with detailed field layouts, record structures, and data relationships
+  - **Phase 5 Task 2:** ✅ Document simulation configuration (`GENAPP.TXT`, `#SSVARS.TXT`) - workload simulator setup with network parameters, transaction paths, and shared variables
+  - **Phase 5 Task 3:** ✅ Document transaction simulation scripts (`SSC1*`, `SSP1*`, `SSP2*`, `SSP3*`, `SSP4*`) - individual transaction flows with data generation modules and error tracking
+  - **Phase 5 Task 4:** ✅ Document web service simulation (`WSC1*`, `WSLGCF`) - web interface test scenarios with SOAP envelope generation and HTTP request formatting
+  - **Phase 5 Task 5:** ✅ Document reference data files (`CCOLOR`, `CMAKE`, `CMODEL`, `CTYPE`, `FNAME`, `HTYPE`, `PCODE`, `PTYPE`, `RTYPE`, `SNAME`) - lookup tables and validation data for realistic test data generation
+  - **Phase 5 Task 6:** ✅ Document error and control flows (`ONCICS`, `STOP`, `WASERROR`) - simulation control and exception handling with terminal management and graceful shutdown
+  - **Phase 5 Task 7:** ✅ Document event bindings (`Transaction_Counters.evbind`) - CICS monitoring configuration with business transaction metrics capture and statistics collection
 
 ## Parallelization Notes
 - Pair front-end and back-end COBOL modules in the same lane to avoid re-reading shared commareas.
