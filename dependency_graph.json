@@ -260,6 +260,72 @@
       ],
       "description": "Update policy VSAM service",
       "type": "cobol"
+    },
+    "SOAIC01": {
+      "depends_on": [],
+      "description": "Customer interface copybook for web services - includes full customer profile plus policy data buffer, used in LGACUS01 WSDL generation",
+      "type": "soa-interface"
+    },
+    "SOAIPB1": {
+      "depends_on": [],
+      "description": "Commercial policy interface copybook for web services - business property details with perils and premiums, used in policy transactions WSDL generation",
+      "type": "soa-interface"
+    },
+    "SOAIPE1": {
+      "depends_on": [],
+      "description": "Endowment policy interface copybook for web services - investment options and life assurance fields, used in policy transactions WSDL generation",
+      "type": "soa-interface"
+    },
+    "SOAIPH1": {
+      "depends_on": [],
+      "description": "House policy interface copybook for web services - property details and address information, used in policy transactions WSDL generation",
+      "type": "soa-interface"
+    },
+    "SOAIPM1": {
+      "depends_on": [],
+      "description": "Motor policy interface copybook for web services - vehicle specifications and accident history, used in policy transactions WSDL generation",
+      "type": "soa-interface"
+    },
+    "WSAAC01": {
+      "depends_on": [
+        "LGACUS01",
+        "SOAIC01"
+      ],
+      "description": "Customer add web service generation JCL using SOAIC01 interface",
+      "type": "jcl"
+    },
+    "WSAAP01": {
+      "depends_on": [
+        "LGAPOL01",
+        "SOAIPB1",
+        "SOAIPE1",
+        "SOAIPH1",
+        "SOAIPM1"
+      ],
+      "description": "Policy add web service generation JCL using policy-specific SOA interfaces",
+      "type": "jcl"
+    },
+    "WSAIP01": {
+      "depends_on": [
+        "LGIPOL01",
+        "SOAIPB1",
+        "SOAIPE1",
+        "SOAIPH1",
+        "SOAIPM1"
+      ],
+      "description": "Policy inquiry web service generation JCL using policy-specific SOA interfaces",
+      "type": "jcl"
+    },
+    "WSAUP01": {
+      "depends_on": [
+        "LGUPOL01",
+        "SOAIPB1",
+        "SOAIPE1",
+        "SOAIPH1",
+        "SOAIPM1"
+      ],
+      "description": "Policy update web service generation JCL using policy-specific SOA interfaces",
+      "type": "jcl"
     }
   }
 }

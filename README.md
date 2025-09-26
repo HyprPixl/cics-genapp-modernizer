@@ -147,6 +147,61 @@
 - Need to verify whether source members align with current CICS region configuration.
 - Images folder currently holds `initial_topology.jpg`; consider exporting architecture notes from there.
 
+## Shared Copybook Assets
+### SOA Interface Copybooks (Web Service Data Structures)
+These copybooks define COBOL data structures that are converted to WSDL schemas for web service interfaces using the IBM CICS Language Structure to Web Service (LS2WS) utility.
+
+#### SOAIC01 – Customer Interface Copybook
+- Purpose: defines the web service interface structure for customer-related operations, providing a 32KB-compatible data layout for WSIM support.
+- Structure: comprehensive customer profile including personal details, contact information, and a large policy data buffer.
+- Fields: customer number, names, date of birth, address components, phone numbers, email address, number of policies, and 30KB policy data area.
+- Usage: employed as both REQMEM and RESPMEM in `WSAAC01.JCL` for generating LGACUS01 web service WSDL definitions.
+- Integration: supports customer add operations via web services, bridging SOAP/HTTP requests to CICS transaction `LGACUS01`.
+
+#### SOAIPB1 – Commercial Policy Interface Copybook
+- Purpose: web service interface for commercial/business property insurance policies with comprehensive risk and premium management.
+- Structure: standard policy header plus business-specific fields for property details, multiple perils, and premium calculations.
+- Key Fields: business address with GPS coordinates, property type, customer details, four peril types (Fire, Crime, Flood, Weather) with individual premiums, policy status, and rejection reasons.
+- Usage: used in multiple web service generation jobs (`WSAAP01.JCL`, `WSAIP01.JCL`, `WSAUP01.JCL`) for commercial policy add, inquiry, and update operations.
+- Integration: enables web service access to commercial policy transactions via `LGAPOL01`, `LGIPOL01`, and `LGUPOL01`.
+
+#### SOAIPE1 – Endowment Policy Interface Copybook
+- Purpose: web service interface for endowment/investment insurance products with life assurance components.
+- Structure: standard policy header plus endowment-specific investment options and life insurance details.
+- Key Fields: investment flags for with-profits, equities, and managed funds; fund name, policy term, sum assured, and life assured person details.
+- Usage: integrated into web service generation for endowment policy operations across add, inquiry, and update services.
+- Integration: supports endowment policy web service transactions through standardized SOAP interface generation.
+
+#### SOAIPH1 – House Policy Interface Copybook
+- Purpose: web service interface for residential property insurance with property valuation and location details.
+- Structure: standard policy header plus house-specific property characteristics and address information.
+- Key Fields: property type classification, number of bedrooms, property value, house name/number, and postal code.
+- Usage: employed in house policy web service generation across all CRUD operations (add, inquiry, update).
+- Integration: enables web access to house policy transactions while maintaining compatibility with existing COBOL programs.
+
+#### SOAIPM1 – Motor Policy Interface Copybook
+- Purpose: web service interface for motor vehicle insurance with comprehensive vehicle specification and history tracking.
+- Structure: standard policy header plus detailed vehicle information and risk assessment data.
+- Key Fields: vehicle make/model, value, registration number, color, engine capacity, manufacture date, premium calculation, and accident history.
+- Usage: supports motor policy web service operations across all transaction types.
+- Integration: provides web service bridge to motor policy COBOL transactions with full vehicle data preservation.
+- Note: contains level 05 field `CA-POLICY-NUM` (likely a COBOL source formatting inconsistency).
+
+#### Common Design Patterns
+- Consistent Header: all SOA interface copybooks include standard fields (request ID, return code, customer number, policy number).
+- Policy Header Integration: policy-specific copybooks extend the base structure with common policy fields (issue date, expiry date, last changed timestamp, broker details).
+- 32KB Compatibility: all copybooks include large filler areas (30KB) to remain below 32KB total size for WSIM (workstation simulator) support.
+- Symmetric Interface: used as both request and response structures (REQMEM=RESPMEM) in LS2WS web service generation.
+- Type Safety: each policy type has its own dedicated interface structure to ensure proper field validation and data integrity.
+
+#### Web Service Integration
+The SOA interface copybooks are consumed by web service generation JCL members:
+- `WSAAC01.JCL`: customer service generation using `SOAIC01`
+- `WSAAP01.JCL`: policy add services using all policy-specific interfaces
+- `WSAIP01.JCL`: policy inquiry services using all policy-specific interfaces  
+- `WSAUP01.JCL`: policy update services using all policy-specific interfaces
+- Each JCL uses DFHLS2WS to convert COBOL structures into WSDL and binding files for CICS web service deployment.
+
 ## Next Steps
 - Inventory high-priority COBOL transactions first (e.g., customer inquiry vs policy update paths).
 - Decide documentation template for program deep-dives; store drafts alongside `AGENTS.md` notes.
