@@ -99,6 +99,48 @@
 - Error Handling: abends with code `LGCA` when no commarea provided; returns code `98` for insufficient length, `99` for unrecognized request ID; early return on deletion errors.
 - Notes: converts request ID to uppercase for validation; supports all four policy types (Endowment, Motor, House, Commercial) for deletion operations.
 
+### LGSTSQ – Shared Logging Service
+- Purpose: centralized diagnostic logging service that writes messages to both transient data queues (TDQ) and temporary storage queues (TSQ) for GenApp error tracking.
+- Interfaces: can be invoked via CICS `LINK` with 90-byte commarea containing diagnostic message, or called as transaction via `RECEIVE` from terminal input.
+- Dependencies: CICS transient data queue `CSMT`, temporary storage queue `GENAnnnn` (where `nnnn` comes from optional `Q=nnnn` parameter), CICS commands (`ASSIGN`, `WRITEQ TD`, `WRITEQ TS`, `RECEIVE`, `SEND`, `RETURN`).
+- Error Handling: uses `NOSUSPEND` option for TSQ writes to avoid task suspension when queue space unavailable; continues operation regardless of individual queue write failures.
+- Notes: detects invocation method via `ASSIGN INVOKINGPROG` - called programs get commarea route, terminal transactions get `RECEIVE` route; supports custom queue naming via `Q=nnnn` prefix in message content.
+
+### LGDPDB01 – Delete Policy Database Writer
+- Purpose: DB2-backed policy deletion service that removes policy records from the POLICY table and coordinates VSAM cleanup via `LGDPVS01`.
+- Interfaces: requires `LGCMAREA` with customer number, policy number, and request ID; supports deletion request IDs (`01DEND`, `01DHOU`, `01DCOM`, `01DMOT`).
+- Dependencies: DB2 `POLICY` table, `LGDPVS01` (VSAM deletion), `LGCMAREA` copybook, `LGSTSQ` for error logging, CICS commands (`LINK`, `RETURN`, `ASKTIME`).
+- Error Handling: abends with `LGCA` when no commarea provided; returns code `98` for insufficient length, `99` for unrecognized request ID, `90` for SQL failures; logs comprehensive error details including customer/policy numbers and SQL operations.
+- Notes: relies on DB2 foreign key constraints for proper deletion order; treats both SQLCODE 0 and 100 (not found) as successful; always attempts VSAM cleanup via `LGDPVS01` after successful DB2 deletion.
+
+### LGIPDB01 – Inquire Policy Database Reader
+- Purpose: comprehensive DB2-backed policy inquiry service supporting multiple policy types with complex join queries and cursor-based data retrieval.
+- Interfaces: requires `LGCMAREA` with customer number, policy number, and request ID; supports inquiry request IDs (`01IEND`, `01IHOU`, `01IMOT`, `01ICOM`, `02ICOM`, `03ICOM`, `05ICOM`).
+- Dependencies: DB2 tables (`POLICY`, `ENDOWMENT`, `HOUSE`, `MOTOR`, `COMMERCIAL`), `LGCMAREA` copybook, `LGPOLICY` SQL include, `LGSTSQ` for error logging, CICS commands (`RETURN`, `ASKTIME`).
+- Error Handling: abends with `LGCA` when no commarea provided; returns code `99` for unrecognized request ID, `88` for cursor operation failures; comprehensive error logging with SQL operation details and customer/policy context.
+- Notes: handles variable-length data fields with indicator variables; uses scroll cursors for commercial policy zip code-based queries; calculates dynamic commarea lengths based on retrieved data size including padding fields.
+
+### LGUCDB01 – Update Customer Database Writer
+- Purpose: DB2-backed customer update service that modifies customer records in the CUSTOMER table and coordinates VSAM synchronization via `LGUCVS01`.
+- Interfaces: requires `LGCMAREA` with customer number and updated customer fields (name, address, phone, email); uses fixed 225-byte commarea for VSAM sync.
+- Dependencies: DB2 `CUSTOMER` table, `LGUCVS01` (VSAM sync), `LGCMAREA` copybook, `LGPOLICY` for field definitions, `LGSTSQ` for error logging, CICS commands (`LINK`, `RETURN`, `ASKTIME`).
+- Error Handling: abends with `LGCA` when no commarea provided; returns code `01` for customer not found (SQLCODE 100), `90` for other SQL failures; comprehensive error logging with customer context and SQL operation details.
+- Notes: updates comprehensive customer profile including personal details, address, and contact information; always invokes VSAM synchronization after successful DB2 update to maintain data consistency across storage systems.
+
+### LGICDB01 – Inquire Customer Database Reader
+- Purpose: DB2-backed customer inquiry service that retrieves complete customer details from the CUSTOMER table using single-row SELECT operations.
+- Interfaces: requires `LGCMAREA` with customer number; returns customer profile data including personal details, address, and contact information directly in commarea.
+- Dependencies: DB2 `CUSTOMER` table, `LGCMAREA` copybook, `LGPOLICY` for field definitions, `LGSTSQ` for error logging, CICS commands (`RETURN`, `ASKTIME`).
+- Error Handling: abends with `LGCA` when no commarea provided; returns code `98` for insufficient commarea length, `01` for customer not found (SQLCODE 100) or deadlock (SQLCODE -913), `90` for other SQL failures; detailed error logging with customer context.
+- Notes: performs comprehensive commarea length validation based on customer record size; populates all customer fields directly into commarea structure for efficient data transfer to caller.
+
+### LGUPDB01 – Update Policy Database Writer
+- Purpose: DB2-backed policy update service that modifies policy records across multiple policy tables (Endowment, House, Motor) and coordinates VSAM synchronization via `LGUPVS01`.
+- Interfaces: requires `LGCMAREA` with customer number, policy number, and request ID; supports update request IDs (`01UEND`, `01UHOU`, `01UMOT`) with corresponding policy data.
+- Dependencies: DB2 tables (`POLICY`, `ENDOWMENT`, `HOUSE`, `MOTOR`), `LGUPVS01` (VSAM sync), `LGCMAREA` copybook, `LGPOLICY` for field definitions, `LGSTSQ` for error logging, CICS commands (`LINK`, `RETURN`, `ASKTIME`).
+- Error Handling: abends with `LGCA` when no commarea provided; returns code `90` for SQL failures including deadlocks (SQLCODE -913); uses cursor-based locking for timestamp validation and optimistic concurrency control.
+- Notes: uses POLICY_CURSOR for record locking and timestamp validation; performs type-specific updates based on request ID; always invokes VSAM synchronization after successful DB2 updates to maintain cross-system consistency.
+
 ## Immediate Findings & Questions
 - `install.sh` expects `tsocmd` and USS `cp` with dataset support; confirm environment prerequisites.
 - Customer experience assets hint at established monitoring and test flows; identify current owners.
