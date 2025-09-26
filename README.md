@@ -99,6 +99,47 @@
 - Error Handling: abends with code `LGCA` when no commarea provided; returns code `98` for insufficient length, `99` for unrecognized request ID; early return on deletion errors.
 - Notes: converts request ID to uppercase for validation; supports all four policy types (Endowment, Motor, House, Commercial) for deletion operations.
 
+## Shared Data Structures
+
+### LGCMAREA – Core Communication Area Copybook
+- Purpose: unified DFHCOMMAREA structure defining data exchange format for all GenApp transactions; provides consistent layout for customer and policy operations across front-end and back-end services.
+- Structure Overview: 32,500-byte commarea with 18-byte header (request ID, return code, customer number) plus 32,482-byte request-specific payload supporting multiple data variants.
+- Header Fields:
+  - `CA-REQUEST-ID` (6 chars): transaction discriminator (`01ACUS`, `01ICUS`, `01UCUS`, `01APOL`, `01IPOL`, `01UPOL`, `01DPOL`, etc.)
+  - `CA-RETURN-CODE` (2 digits): operation result code (`00`=success, `70`=DB2 error, `80`=VSAM error, `90`=SQL error, `98`=length error, `99`=invalid request)
+  - `CA-CUSTOMER-NUM` (10 digits): customer identifier for policy operations and linkage
+- Data Variants:
+  - `CA-CUSTOMER-REQUEST`: customer data layout (first/last name, DOB, address, contact details, policy count, nested policy data area)
+  - `CA-CUSTSECR-REQUEST`: customer security layout (password hash, retry count, state flags)
+  - `CA-POLICY-REQUEST`: policy data layout with common fields (issue/expiry dates, broker info, payment) plus type-specific sections
+- Policy Type Sections:
+  - `CA-ENDOWMENT`: life insurance data (with-profits flag, fund details, term, sum assured, life assured name)
+  - `CA-HOUSE`: property insurance data (property type, bedrooms, value, house name/number, postcode)
+  - `CA-MOTOR`: vehicle insurance data (make, model, value, registration, color, engine size, manufacture year, premium, accident history)
+  - `CA-COMMERCIAL`: business insurance data (address, coordinates, customer info, property type, peril/premium pairs for fire/crime/flood/weather)
+  - `CA-CLAIM`: claims data (claim number, date, paid/value amounts, cause, observations)
+- Usage Patterns: included via `COPY LGCMAREA` in LINKAGE SECTION of all transaction programs; referenced as `DFHCOMMAREA` parameter; field access via dot notation (`CA-REQUEST-ID`, `CA-POLICY-COMMON.CA-ISSUE-DATE`, etc.)
+- Dependencies: consumed by all front-end transaction programs (`LGACUS01`, `LGICUS01`, `LGUCUS01`, `LGAPOL01`, `LGIPOL01`, `LGUPOL01`, `LGDPOL01`) and backend services (`LGACDB01`, `LGACVS01`, `LGAPDB01`, `LGAPVS01`).
+
+### LGPOLICY – DB2 Host Variable Copybook  
+- Purpose: DB2 interface definitions providing host variable structures and length constants for policy-related database operations; ensures consistent field mapping between COBOL programs and DB2 tables.
+- Length Constants: `WS-POLICY-LENGTHS` section defines field and record sizes for validation and buffer allocation across policy types.
+  - Core lengths: Customer (72), Policy (72), Endowment (52), House (58), Motor (65), Commercial (1102), Claim (546)
+  - Full record lengths: Endowment (124), House (130), Motor (137), Commercial (1174), Claim (618) including headers
+  - Summary lengths: Endowment summary (25) for abbreviated displays
+- DB2 Structure Mappings:
+  - `DB2-CUSTOMER`: maps to CUSTOMER table fields (name, DOB, address, contact details)
+  - `DB2-POLICY`: maps to POLICY table with common policy attributes (type, number, dates, broker, payment)
+  - `DB2-ENDOWMENT`: maps to ENDOWMENT table fields (investment options, term, sum assured, life assured)
+  - `DB2-HOUSE`: maps to HOUSE table fields (property details, value, location)
+  - `DB2-MOTOR`: maps to MOTOR table fields (vehicle specs, value, registration, premium, claims history)
+  - `DB2-COMMERCIAL`: maps to COMMERCIAL table fields (business address, coordinates, peril coverage, status)
+  - `DB2-CLAIM`: maps to CLAIM table fields (claim details, amounts, cause, observations)
+- SQL Integration: included via `EXEC SQL INCLUDE LGPOLICY END-EXEC` in DB2-enabled programs; provides host variables for INSERT, UPDATE, SELECT operations; supports parametric queries and result set mapping.
+- Data Type Handling: uses COBOL `PIC` clauses matching DB2 column definitions; numeric fields use `COMP` for binary storage; character fields support varying lengths; padding fields accommodate DB2 row size requirements.
+- Usage Patterns: referenced in SQL statements as `:DB2-POLICY.DB2-ISSUEDATE`, `:DB2-CUSTOMER.DB2-FIRSTNAME`, etc.; lengths used for dynamic allocation (`MOVE WS-FULL-MOTOR-LEN TO WS-REQUIRED-CA-LEN`); structure mapping for data movement between commarea and DB2 host variables.
+- Dependencies: consumed by all DB2-enabled backend services (`LGACDB01`, `LGAPDB01`, `LGICDB01`, `LGIPDB01`, `LGUCDB01`, `LGUPDB01`) and some front-end programs requiring field length validation (`LGACUS01`, `LGICUS01`, `LGIPOL01`).
+
 ## Immediate Findings & Questions
 - `install.sh` expects `tsocmd` and USS `cp` with dataset support; confirm environment prerequisites.
 - Customer experience assets hint at established monitoring and test flows; identify current owners.

@@ -8,6 +8,10 @@
   - Customer operations: `LGACUS01` (add), `LGICUS01` (inquire), `LGUCUS01` (update) with backing services `LGACDB01`, `LGACVS01`
   - Policy operations: `LGAPOL01` (add), `LGIPOL01` (inquire), `LGUPOL01` (update), `LGDPOL01` (delete) with backing services `LGAPDB01`, `LGAPVS01`
   - All front-end programs follow consistent patterns: commarea validation, request ID checking, backend delegation, error logging via `LGSTSQ`
+- **PHASE 3 TASK 1 COMPLETE:** Documented core copybooks (`LGCMAREA`, `LGPOLICY`) with comprehensive structure analysis:
+  - `LGCMAREA`: unified 32,500-byte commarea structure with header fields and request-specific variants for customer/policy operations
+  - `LGPOLICY`: DB2 host variable definitions with length constants and field mappings for all policy-related database tables
+  - Updated dependency graph with copybook relationships to all consuming programs
 
 ## Dependency Notes
 - `LGAPOL01` depends on `LGAPDB01` (database insert logic), `LGSTSQ` (TDQ logging helper), and the `LGCMAREA` copybook.
@@ -16,6 +20,10 @@
 - Customer front-ends (`LGACUS01`, `LGICUS01`, `LGUCUS01`) all depend on corresponding DB backends (`LGACDB01`, `LGICDB01`, `LGUCDB01`) and shared infrastructure (`LGSTSQ`, `LGCMAREA`).
 - Policy front-ends (`LGAPOL01`, `LGIPOL01`, `LGUPOL01`, `LGDPOL01`) follow similar patterns with DB backends (`LGAPDB01`, `LGIPDB01`, `LGUPDB01`, `LGDPDB01`).
 - All transaction programs share error logging through `LGSTSQ` and use `LGCMAREA` for consistent commarea structure.
+- **Copybook Dependencies:**
+  - `LGCMAREA` is the foundation copybook used by ALL transaction programs (front-end and backend) for unified data exchange
+  - `LGPOLICY` provides DB2 host variables and is used by ALL database backend programs (`*DB01` series) for SQL operations
+  - Both copybooks enable consistent data structure and field mapping across the entire GenApp transaction flow
 
 ## Tooling
 - Dependency graph helper lives at `tools/dep_graph.py`; default store is `dependency_graph.json`.
@@ -29,7 +37,7 @@
 - **Phase 1 – Core Transactions (serial):** Continue through customer and policy front-end programs (`LGAPOL01`, `LGAPVS01`, `LGACUS01`, etc.), pairing each with its backing DB module so request/response flows stay consistent.
 - **Phase 2 – Data Services (serial):** Document batch/database utilities (`LGAPDB01`, `LGDPDB01`, `LGIPDB01`, `LGUCDB01`) and shared logging (`LGSTSQ`) once their callers are understood.
 - **Phase 3 – Shared Assets (parallel):** Tackle copybooks and BMS maps alongside transaction work; these can be owned by separate teammates with ongoing updates.
-  - **Phase 3 Task 1:** Document core copybooks (`LGCMAREA`, `LGPOLICY`) - shared data structures
+  - **Phase 3 Task 1:** ✅ **COMPLETE** - Document core copybooks (`LGCMAREA`, `LGPOLICY`) - shared data structures
   - **Phase 3 Task 2:** Document lookup copybooks (`POLLOOK`, `POLLOO2`) - reference data structures  
   - **Phase 3 Task 3:** Document SOA interface copybooks (`SOAIC01`, `SOAIPB1`, `SOAIPE1`, `SOAIPH1`, `SOAIPM1`) - service interfaces
   - **Phase 3 Task 4:** Document SOA data copybooks (`SOAVCII`, `SOAVCIO`, `SOAVPII`, `SOAVPIO`) - service data exchange
