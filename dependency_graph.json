@@ -1,5 +1,10 @@
 {
   "nodes": {
+    "#SSVARS": {
+      "depends_on": [],
+      "description": "Shared simulation variables and configuration - included by all workstation simulator scripts",
+      "type": "simulation-config"
+    },
     "DB2.COMMERCIAL": {
       "depends_on": [],
       "description": "Commercial policy extension",
@@ -115,6 +120,11 @@
       "description": "VSAM writer for policy records",
       "type": "cobol"
     },
+    "LGCF": {
+      "depends_on": [],
+      "description": "Customer context establishment transaction - sets up customer session for policy operations",
+      "type": "cics-transaction"
+    },
     "LGCMAREA": {
       "depends_on": [],
       "description": "Shared commarea layout",
@@ -190,6 +200,11 @@
       "description": "Inquire policy front-end program",
       "type": "cobol"
     },
+    "LGPF": {
+      "depends_on": [],
+      "description": "Policy finder transaction - locates existing policies by customer and type for inquiry/update/delete operations",
+      "type": "cics-transaction"
+    },
     "LGPOLICY": {
       "depends_on": [],
       "description": "Embedded SQL host variable definitions",
@@ -260,6 +275,280 @@
       ],
       "description": "Update policy VSAM service",
       "type": "cobol"
+    },
+    "SSC1A1": {
+      "depends_on": [
+        "#SSVARS",
+        "LGACUS01",
+        "SSC1A2",
+        "UTBL.Fname",
+        "UTBL.Pcode",
+        "UTBL.Sname"
+      ],
+      "description": "Customer add simulation script - automates customer creation via SSC1 transaction",
+      "type": "simulation-script"
+    },
+    "SSC1A2": {
+      "depends_on": [
+        "UTBL.Fname",
+        "UTBL.Pcode",
+        "UTBL.Sname"
+      ],
+      "description": "Customer data generation module - provides variable data for customer add simulation scripts",
+      "type": "simulation-data"
+    },
+    "SSC1I1": {
+      "depends_on": [
+        "#SSVARS",
+        "LGCF",
+        "LGICUS01"
+      ],
+      "description": "Customer inquiry simulation script - automates customer lookup via SSC1 transaction",
+      "type": "simulation-script"
+    },
+    "SSP1A1": {
+      "depends_on": [
+        "#SSVARS",
+        "LGAPOL01",
+        "LGCF",
+        "SSP1A2",
+        "UTBL.Ccolor",
+        "UTBL.Cmake",
+        "UTBL.Cmodel"
+      ],
+      "description": "Motor policy add simulation script - automates motor insurance policy creation via SSP1 transaction",
+      "type": "simulation-script"
+    },
+    "SSP1A2": {
+      "depends_on": [
+        "UTBL.Ccolor",
+        "UTBL.Cmake",
+        "UTBL.Cmodel"
+      ],
+      "description": "Motor policy data generation module - provides variable data for motor policy add simulation scripts",
+      "type": "simulation-data"
+    },
+    "SSP1D1": {
+      "depends_on": [
+        "#SSVARS",
+        "LGCF",
+        "LGDPOL01",
+        "LGPF"
+      ],
+      "description": "Motor policy delete simulation script - automates motor policy deletion via SSP1 transaction",
+      "type": "simulation-script"
+    },
+    "SSP1I1": {
+      "depends_on": [
+        "#SSVARS",
+        "LGCF",
+        "LGIPOL01",
+        "LGPF"
+      ],
+      "description": "Motor policy inquiry simulation script - automates motor policy lookup via SSP1 transaction and LGPF finder",
+      "type": "simulation-script"
+    },
+    "SSP1U1": {
+      "depends_on": [
+        "#SSVARS",
+        "LGCF",
+        "LGPF",
+        "LGUPOL01",
+        "UTBL.Ccolor",
+        "UTBL.Cmake",
+        "UTBL.Cmodel"
+      ],
+      "description": "Motor policy update simulation script - automates motor policy modifications via SSP1 transaction",
+      "type": "simulation-script"
+    },
+    "SSP2A1": {
+      "depends_on": [
+        "#SSVARS",
+        "LGAPOL01",
+        "LGCF",
+        "SSP2A2",
+        "UTBL.Fname",
+        "UTBL.Sname"
+      ],
+      "description": "Endowment policy add simulation script - automates life insurance policy creation via SSP2 transaction",
+      "type": "simulation-script"
+    },
+    "SSP2A2": {
+      "depends_on": [
+        "UTBL.Fname",
+        "UTBL.Sname"
+      ],
+      "description": "Endowment policy data generation module - provides variable data for endowment policy add simulation scripts",
+      "type": "simulation-data"
+    },
+    "SSP2D1": {
+      "depends_on": [
+        "#SSVARS",
+        "LGCF",
+        "LGDPOL01",
+        "LGPF"
+      ],
+      "description": "Endowment policy delete simulation script - automates endowment policy deletion via SSP2 transaction",
+      "type": "simulation-script"
+    },
+    "SSP2I1": {
+      "depends_on": [
+        "#SSVARS",
+        "LGCF",
+        "LGIPOL01",
+        "LGPF"
+      ],
+      "description": "Endowment policy inquiry simulation script - automates endowment policy lookup via SSP2 transaction",
+      "type": "simulation-script"
+    },
+    "SSP2U1": {
+      "depends_on": [
+        "#SSVARS",
+        "LGCF",
+        "LGPF",
+        "LGUPOL01",
+        "UTBL.Fname",
+        "UTBL.Sname"
+      ],
+      "description": "Endowment policy update simulation script - automates endowment policy modifications via SSP2 transaction",
+      "type": "simulation-script"
+    },
+    "SSP3A1": {
+      "depends_on": [
+        "#SSVARS",
+        "LGAPOL01",
+        "LGCF",
+        "SSP3A2",
+        "UTBL.Fname",
+        "UTBL.Htype",
+        "UTBL.Pcode",
+        "UTBL.Sname"
+      ],
+      "description": "House policy add simulation script - automates house insurance policy creation via SSP3 transaction",
+      "type": "simulation-script"
+    },
+    "SSP3A2": {
+      "depends_on": [
+        "UTBL.Fname",
+        "UTBL.Htype",
+        "UTBL.Pcode",
+        "UTBL.Sname"
+      ],
+      "description": "House policy data generation module - provides variable data for house policy add simulation scripts",
+      "type": "simulation-data"
+    },
+    "SSP3D1": {
+      "depends_on": [
+        "#SSVARS",
+        "LGCF",
+        "LGDPOL01",
+        "LGPF"
+      ],
+      "description": "House policy delete simulation script - automates house policy deletion via SSP3 transaction",
+      "type": "simulation-script"
+    },
+    "SSP3I1": {
+      "depends_on": [
+        "#SSVARS",
+        "LGCF",
+        "LGIPOL01",
+        "LGPF"
+      ],
+      "description": "House policy inquiry simulation script - automates house policy lookup via SSP3 transaction",
+      "type": "simulation-script"
+    },
+    "SSP3U1": {
+      "depends_on": [
+        "#SSVARS",
+        "LGCF",
+        "LGPF",
+        "LGUPOL01",
+        "UTBL.Fname",
+        "UTBL.Htype",
+        "UTBL.Pcode",
+        "UTBL.Sname"
+      ],
+      "description": "House policy update simulation script - automates house policy modifications via SSP3 transaction",
+      "type": "simulation-script"
+    },
+    "SSP4A1": {
+      "depends_on": [
+        "#SSVARS",
+        "LGAPOL01",
+        "LGCF",
+        "UTBL.Fname",
+        "UTBL.Pcode",
+        "UTBL.Ptype",
+        "UTBL.Rtype",
+        "UTBL.Sname"
+      ],
+      "description": "Commercial policy add simulation script - automates commercial property policy creation via SSP4 transaction",
+      "type": "simulation-script"
+    },
+    "SSP4D1": {
+      "depends_on": [
+        "#SSVARS",
+        "LGCF",
+        "LGDPOL01",
+        "LGPF"
+      ],
+      "description": "Commercial policy delete simulation script - automates commercial policy deletion via SSP4 transaction",
+      "type": "simulation-script"
+    },
+    "SSP4I1": {
+      "depends_on": [
+        "#SSVARS",
+        "LGCF",
+        "LGIPOL01",
+        "LGPF"
+      ],
+      "description": "Commercial policy inquiry simulation script - automates commercial policy lookup via SSP4 transaction",
+      "type": "simulation-script"
+    },
+    "UTBL.Ccolor": {
+      "depends_on": [],
+      "description": "Car colors reference table - provides vehicle color names for motor policy data generation",
+      "type": "reference-data"
+    },
+    "UTBL.Cmake": {
+      "depends_on": [],
+      "description": "Car makes reference table - provides vehicle manufacturer names for motor policy data generation",
+      "type": "reference-data"
+    },
+    "UTBL.Cmodel": {
+      "depends_on": [],
+      "description": "Car models reference table - provides vehicle model names for motor policy data generation",
+      "type": "reference-data"
+    },
+    "UTBL.Fname": {
+      "depends_on": [],
+      "description": "First names reference table - provides realistic first names for customer and beneficiary data generation",
+      "type": "reference-data"
+    },
+    "UTBL.Htype": {
+      "depends_on": [],
+      "description": "House types reference table - provides property type classifications for house policy data generation",
+      "type": "reference-data"
+    },
+    "UTBL.Pcode": {
+      "depends_on": [],
+      "description": "Postal codes reference table - provides realistic postal/zip codes for address data generation",
+      "type": "reference-data"
+    },
+    "UTBL.Ptype": {
+      "depends_on": [],
+      "description": "Property types reference table - provides commercial property classifications for commercial policy data generation",
+      "type": "reference-data"
+    },
+    "UTBL.Rtype": {
+      "depends_on": [],
+      "description": "Road types reference table - provides street/road type suffixes for address data generation",
+      "type": "reference-data"
+    },
+    "UTBL.Sname": {
+      "depends_on": [],
+      "description": "Surnames reference table - provides realistic last names for customer and beneficiary data generation",
+      "type": "reference-data"
     }
   }
 }
