@@ -167,6 +167,14 @@
       "description": "Inquire customer front-end program",
       "type": "cobol"
     },
+    "LGICVS01": {
+      "depends_on": [
+        "SOAVCII",
+        "SOAVCIO"
+      ],
+      "description": "Customer VSAM inquiry service for web services - reads customer data from KSDSCUST cluster for SOA integration",
+      "type": "cobol"
+    },
     "LGIPDB01": {
       "depends_on": [
         "DB2.COMMERCIAL",
@@ -260,6 +268,26 @@
       ],
       "description": "Update policy VSAM service",
       "type": "cobol"
+    },
+    "SOAVCII": {
+      "depends_on": [],
+      "description": null,
+      "type": null
+    },
+    "SOAVCIO": {
+      "depends_on": [],
+      "description": "Customer inquiry web service output commarea - defines response structure with customer data text and lookup key for LGICVS01",
+      "type": "copybook"
+    },
+    "SOAVPII": {
+      "depends_on": [],
+      "description": "Policy validation web service input commarea - defines request structure with policy type and customer number for LGIPVS01 VSAM policy validation",
+      "type": "copybook"
+    },
+    "SOAVPIO": {
+      "depends_on": [],
+      "description": "Policy validation web service output commarea - defines response structure with validation text and complete policy key (type, customer, policy numbers) for LGIPVS01",
+      "type": "copybook"
     }
   }
 }
