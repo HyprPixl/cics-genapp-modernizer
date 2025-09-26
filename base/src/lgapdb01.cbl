@@ -1,12 +1,7 @@
        PROCESS SQL
-      ******************************************************************
       *                                                                *
       * (C) Copyright IBM Corp. 2011, 2021                             *
-      *                                                                *
-      *                    ADD Policy                                  *
-      *                                                                *
       *   To add full details of an individual policy:                 *
-      *     Endowment, House, Motor, Commercial                        *
       *                                                                *
       ******************************************************************
        IDENTIFICATION DIVISION.
@@ -18,10 +13,6 @@
 
        WORKING-STORAGE SECTION.
 
-      *----------------------------------------------------------------*
-      * Common defintions                                              *
-      *----------------------------------------------------------------*
-      * Run time (debug) infomation for this invocation
         01  WS-HEADER.
            03 WS-EYECATCHER            PIC X(16)
                                         VALUE 'LGAPDB01------WS'.
@@ -55,10 +46,7 @@
        01  CA-ERROR-MSG.
            03 FILLER                   PIC X(9)  VALUE 'COMMAREA='.
            03 CA-DATA                  PIC X(90) VALUE SPACES.
-      *----------------------------------------------------------------*
 
-      *----------------------------------------------------------------*
-      * Definitions required for data manipulation                     *
       *----------------------------------------------------------------*
       * Fields to be used to check that commarea is correct length
        01  WS-COMMAREA-LENGTHS.
@@ -71,21 +59,13 @@
           49 WS-VARY-LEN               PIC S9(4) COMP.
           49 WS-VARY-CHAR              PIC X(3900).
 
-      *    Include copybook for defintion of customer details length
            EXEC SQL
              INCLUDE LGPOLICY
            END-EXEC.
-      *----------------------------------------------------------------*
 
       *----------------------------------------------------------------*
-      * Definitions required by SQL statement                          *
-      *   DB2 datatypes to COBOL equivalents                           *
-      *     SMALLINT    :   PIC S9(4) COMP                             *
       *     INTEGER     :   PIC S9(9) COMP                             *
-      *     DATE        :   PIC X(10)                                  *
       *     TIMESTAMP   :   PIC X(26)                                  *
-      *----------------------------------------------------------------*
-      * Host variables for input to DB2 integer types
        01 DB2-IN-INTEGERS.
            03 DB2-CUSTOMERNUM-INT      PIC S9(9) COMP.
            03 DB2-BROKERID-INT         PIC S9(9) COMP.
@@ -115,7 +95,6 @@
 
        01 DB2-OUT-INTEGERS.
            03 DB2-POLICYNUM-INT        PIC S9(9) COMP VALUE +0.
-      *----------------------------------------------------------------*
        01  LGAPVS01                    PIC X(8)  VALUE 'LGAPVS01'.
       *----------------------------------------------------------------*
       *    DB2 CONTROL
@@ -137,17 +116,12 @@
            END-EXEC.
 
 
-      ******************************************************************
-      *    P R O C E D U R E S
-      ******************************************************************
        PROCEDURE DIVISION.
 
-      *----------------------------------------------------------------*
        MAINLINE SECTION.
 
       * initialize working storage variables
            INITIALIZE WS-HEADER.
-      * set up general variable
            MOVE EIBTRNID TO WS-TRANSID.
            MOVE EIBTRMID TO WS-TERMID.
            MOVE EIBTASKN TO WS-TASKNUM.
@@ -160,8 +134,6 @@
 
       *----------------------------------------------------------------*
       * Check commarea and obtain required details                     *
-      *----------------------------------------------------------------*
-      * If NO commarea received issue an ABEND
            IF EIBCALEN IS EQUAL TO ZERO
                MOVE ' NO COMMAREA RECEIVED' TO EM-VARIABLE
                PERFORM WRITE-ERROR-MESSAGE
@@ -175,7 +147,6 @@
       * Convert commarea customer & policy nums to DB2 integer format
            MOVE CA-CUSTOMER-NUM TO DB2-CUSTOMERNUM-INT
            MOVE ZERO            TO DB2-C-PolicyNum-INT
-      * and save in error msg field incase required
            MOVE CA-CUSTOMER-NUM TO EM-CUSNUM
 
       * Check commarea length
@@ -214,8 +185,6 @@
 
       *----------------------------------------------------------------*
       *    Perform the INSERTs against appropriate tables              *
-      *----------------------------------------------------------------*
-      *    Call procedure to Insert row in policy table
            PERFORM INSERT-POLICY
 
       *    Call appropriate routine to insert row to specific
@@ -251,16 +220,13 @@
 
        MAINLINE-EXIT.
            EXIT.
-      *----------------------------------------------------------------*
 
 
       *================================================================*
-      *  Issue INSERT on Policy table using values passed in commarea  *
       * set the timestamp and allow DB2 to allocate a policy number.   *
       *================================================================*
        INSERT-POLICY.
 
-      *    Move numeric fields to integer format
            MOVE CA-BROKERID TO DB2-BROKERID-INT
            MOVE CA-PAYMENT TO DB2-PAYMENT-INT
 
@@ -304,7 +270,6 @@
 
            END-Evaluate.
 
-      *    get value of assigned policy number
            EXEC SQL
              SET :DB2-POLICYNUM-INT = IDENTITY_VAL_LOCAL()
            END-EXEC
@@ -312,7 +277,6 @@
       *    and save in error msg field incase required
            MOVE CA-POLICY-NUM TO EM-POLNUM
 
-      *    get value of assigned Timestamp
            EXEC SQL
              SELECT LASTCHANGED
                INTO :CA-LASTCHANGED
@@ -322,20 +286,15 @@
            EXIT.
 
       *================================================================*
-      * Issue INSERT on endowment table using values passed in commarea*
-      *================================================================*
        INSERT-ENDOW.
 
-      *    Move numeric fields to integer format
            MOVE CA-E-TERM        TO DB2-E-TERM-SINT
            MOVE CA-E-SUM-ASSURED TO DB2-E-SUMASSURED-INT
 
            MOVE ' INSERT ENDOW ' TO EM-SQLREQ
       *----------------------------------------------------------------*
-      *    There are 2 versions of INSERT...                           *
       *      one which updates all fields including Varchar            *
       *      one which updates all fields Except Varchar               *
-      *----------------------------------------------------------------*
            SUBTRACT WS-REQUIRED-CA-LEN FROM EIBCALEN
                GIVING WS-VARY-LEN
 
@@ -398,10 +357,8 @@
 
       *================================================================*
       * Issue INSERT on house table using values passed in commarea    *
-      *================================================================*
        INSERT-HOUSE.
 
-      *    Move numeric fields to integer format
            MOVE CA-H-VALUE       TO DB2-H-VALUE-INT
            MOVE CA-H-BEDROOMS    TO DB2-H-BEDROOMS-SINT
 
@@ -427,19 +384,15 @@
            IF SQLCODE NOT EQUAL 0
              MOVE '90' TO CA-RETURN-CODE
              PERFORM WRITE-ERROR-MESSAGE
-      *      Issue Abend to cause backout of update to Policy table
              EXEC CICS ABEND ABCODE('LGSQ') NODUMP END-EXEC
              EXEC CICS RETURN END-EXEC
            END-IF.
 
            EXIT.
 
-      *================================================================*
       * Issue INSERT on motor table using values passed in commarea    *
-      *================================================================*
        INSERT-MOTOR.
 
-      *    Move numeric fields to integer format
            MOVE CA-M-VALUE       TO DB2-M-VALUE-INT
            MOVE CA-M-CC          TO DB2-M-CC-SINT
            MOVE CA-M-PREMIUM     TO DB2-M-PREMIUM-INT
@@ -473,15 +426,12 @@
            IF SQLCODE NOT EQUAL 0
              MOVE '90' TO CA-RETURN-CODE
              PERFORM WRITE-ERROR-MESSAGE
-      *      Issue Abend to cause backout of update to Policy table
              EXEC CICS ABEND ABCODE('LGSQ') NODUMP END-EXEC
              EXEC CICS RETURN END-EXEC
            END-IF.
 
            EXIT.
 
-      *================================================================*
-      * Issue INSERT on commercial table with values passed in commarea*
       *================================================================*
        INSERT-COMMERCIAL.
 
@@ -547,22 +497,16 @@
            IF SQLCODE NOT EQUAL 0
              MOVE '90' TO CA-RETURN-CODE
              PERFORM WRITE-ERROR-MESSAGE
-      *      Issue Abend to cause backout of update to Policy table
              EXEC CICS ABEND ABCODE('LGSQ') NODUMP END-EXEC
              EXEC CICS RETURN END-EXEC
            END-IF.
 
            EXIT.
 
-      *================================================================*
       * Procedure to write error message to Queues                     *
-      *   message will include Date, Time, Program Name, Customer      *
       *   Number, Policy Number and SQLCODE.                           *
-      *================================================================*
        WRITE-ERROR-MESSAGE.
-      * Save SQLCODE in message
            MOVE SQLCODE TO EM-SQLRC
-      * Obtain and format current time and date
            EXEC CICS ASKTIME ABSTIME(ABS-TIME)
            END-EXEC
            EXEC CICS FORMATTIME ABSTIME(ABS-TIME)

@@ -1,12 +1,5 @@
-      ******************************************************************
-      *                                                                *
-      * (C) Copyright IBM Corp. 2011, 2020                             *
-      *                                                                *
-      *                    DELETE Policy                               *
       *                                                                *
       * VSAM KSDS Policy record DELETE                                 *
-      *                                                                *
-      ******************************************************************
        IDENTIFICATION DIVISION.
        PROGRAM-ID. LGDPVS01.
        ENVIRONMENT DIVISION.
@@ -32,7 +25,6 @@
        01  WS-ABSTIME                  PIC S9(8) COMP VALUE +0.
        01  WS-TIME                     PIC X(8)  VALUE SPACES.
        01  WS-DATE                     PIC X(10) VALUE SPACES.
-      * Error Message structure
        01  ERROR-MSG.
            03 EM-DATE                  PIC X(8)  VALUE SPACES.
            03 FILLER                   PIC X     VALUE SPACES.
@@ -59,7 +51,6 @@
                                       Value 'Program LGDPVS01'.
       *****************************************************************
       *    L I N K A G E     S E C T I O N
-      *****************************************************************
        LINKAGE SECTION.
        01  DFHCOMMAREA.
          Copy LGCMAREA.
@@ -68,12 +59,9 @@
       *****************************************************************
        PROCEDURE DIVISION.
 
-      *---------------------------------------------------------------*
        MAINLINE SECTION.
       *
-      *---------------------------------------------------------------*
            Move EIBCALEN To WS-Commarea-Len.
-      *---------------------------------------------------------------*
            Move CA-Request-ID(4:1) To WF-Request-ID
            Move CA-Policy-Num      To WF-Policy-Num
            Move CA-Customer-Num    To WF-Customer-Num
@@ -90,12 +78,10 @@
              EXEC CICS RETURN END-EXEC
            End-If.
 
-      *---------------------------------------------------------------*
 
        A-EXIT.
            EXIT.
            GOBACK.
-      *---------------------------------------------------------------*
        WRITE-ERROR-MESSAGE.
            EXEC CICS ASKTIME ABSTIME(WS-ABSTIME)
            END-EXEC

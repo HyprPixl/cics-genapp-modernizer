@@ -1,21 +1,15 @@
        PROCESS SQL
       ******************************************************************
       *                                                                *
-      * (C) Copyright IBM Corp. 2011, 2021                             *
-      *                                                                *
       *                     UPDATE customer details                    *
-      *                                                                *
-      ******************************************************************
        IDENTIFICATION DIVISION.
        PROGRAM-ID. LGUCDB01.
        ENVIRONMENT DIVISION.
        CONFIGURATION SECTION.
-      *
        DATA DIVISION.
 
        WORKING-STORAGE SECTION.
 
-      *----------------------------------------------------------------*
       * Common defintions                                              *
       *----------------------------------------------------------------*
       * Run time (debug) infomation for this invocation
@@ -30,9 +24,6 @@
            03 WS-CALEN                 PIC S9(4) COMP.
            03 WS-RETRY                 PIC X.
 
-      * Host variables for input to DB2 integer types
-      * Any values specified in SQL stmts must be defined her
-      * available to SQL pre-compiler
        01 DB2-IN-INTEGERS.
           03 DB2-CUSTOMERNUM-INT       PIC S9(9) COMP.
           03 DB2-POLICYNUM-INT         PIC S9(9) COMP.
@@ -47,7 +38,6 @@
           03 DB2-M-PREMIUM-INT         PIC S9(9) COMP.
           03 DB2-M-ACCIDENTS-INT       PIC S9(9) COMP.
 
-      * Variables for time/date processing
        01  WS-ABSTIME                  PIC S9(8) COMP VALUE +0.
        01  WS-TIME                     PIC X(8)  VALUE SPACES.
        01  WS-DATE                     PIC X(10) VALUE SPACES.
@@ -71,8 +61,6 @@
 
        77  LGUCVS01                    Pic X(8) Value 'LGUCVS01'.
       *----------------------------------------------------------------*
-      *    DB2 CONTROL
-      *----------------------------------------------------------------*
            EXEC SQL
              INCLUDE LGPOLICY
            END-EXEC.
@@ -94,24 +82,19 @@
 
       ******************************************************************
       *    P R O C E D U R E S
-      ******************************************************************
        PROCEDURE DIVISION.
 
-      *----------------------------------------------------------------*
        MAINLINE SECTION.
 
-      *----------------------------------------------------------------*
       * Common code                                                    *
       *----------------------------------------------------------------*
       * initialize working storage variables
            INITIALIZE WS-HEADER.
-      * set up general variable
            MOVE EIBTRNID TO WS-TRANSID.
            MOVE EIBTRMID TO WS-TERMID.
            MOVE EIBTASKN TO WS-TASKNUM.
            MOVE SPACES   TO WS-RETRY.
       *----------------------------------------------------------------*
-      * Check commarea and obtain required details                     *
       *----------------------------------------------------------------*
       * If NO commarea received issue an ABEND
            IF EIBCALEN IS EQUAL TO ZERO
@@ -120,7 +103,6 @@
                EXEC CICS ABEND ABCODE('LGCA') NODUMP END-EXEC
            END-IF
 
-      * initialize commarea return code to zero
            MOVE '00' TO CA-RETURN-CODE
            MOVE EIBCALEN TO WS-CALEN.
            SET WS-ADDR-DFHCOMMAREA TO ADDRESS OF DFHCOMMAREA.
@@ -130,7 +112,6 @@
       * and save in error msg field incase required
            MOVE CA-CUSTOMER-NUM TO EM-CUSNUM
 
-      *    Call procedure to update required tables
            PERFORM UPDATE-CUSTOMER-INFO.
 
            EXEC CICS LINK Program(LGUCVS01)
@@ -146,8 +127,6 @@
            EXIT.
       *----------------------------------------------------------------*
 
-      *================================================================*
-      * Update row in Customer table                                   *
       *================================================================*
        UPDATE-CUSTOMER-INFO.
 
@@ -169,12 +148,10 @@
              END-EXEC
 
            IF SQLCODE NOT EQUAL 0
-      *      Non-zero SQLCODE from UPDATE statement
              IF SQLCODE EQUAL 100
                MOVE '01' TO CA-RETURN-CODE
              ELSE
                MOVE '90' TO CA-RETURN-CODE
-      *        Write error message to TD QUEUE(CSMT)
                PERFORM WRITE-ERROR-MESSAGE
              END-IF
            END-IF.
@@ -182,14 +159,10 @@
 
 
       *================================================================*
-      * Procedure to write error message to Queues                     *
-      *   message will include Date, Time, Program Name, Customer      *
       *   Number, Policy Number and SQLCODE.                           *
       *================================================================*
        WRITE-ERROR-MESSAGE.
-      * Save SQLCODE in message
            MOVE SQLCODE TO EM-SQLRC
-      * Obtain and format current time and date
            EXEC CICS ASKTIME ABSTIME(WS-ABSTIME)
            END-EXEC
            EXEC CICS FORMATTIME ABSTIME(WS-ABSTIME)
@@ -203,7 +176,6 @@
                      COMMAREA(ERROR-MSG)
                      LENGTH(LENGTH OF ERROR-MSG)
            END-EXEC.
-      * Write 90 bytes or as much as we have of commarea to TDQ
            IF EIBCALEN > 0 THEN
              IF EIBCALEN < 91 THEN
                MOVE DFHCOMMAREA(1:EIBCALEN) TO CA-DATA

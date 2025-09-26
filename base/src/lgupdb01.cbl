@@ -1,24 +1,16 @@
        PROCESS SQL
       ******************************************************************
-      *                                                                *
       * (C) Copyright IBM Corp. 2011, 2021                             *
       *                                                                *
       *                     UPDATE policy details                      *
-      *                                                                *
-      ******************************************************************
        IDENTIFICATION DIVISION.
        PROGRAM-ID. LGUPDB01.
        ENVIRONMENT DIVISION.
        CONFIGURATION SECTION.
-      *
        DATA DIVISION.
 
        WORKING-STORAGE SECTION.
 
-      *----------------------------------------------------------------*
-      * Common defintions                                              *
-      *----------------------------------------------------------------*
-      * Run time (debug) infomation for this invocation
         01  WS-HEADER.
            03 WS-EYECATCHER            PIC X(16)
                                         VALUE 'LGUPDB01------WS'.
@@ -30,12 +22,10 @@
            03 WS-CALEN                 PIC S9(4) COMP.
            03 WS-RETRY                 PIC X.
 
-      * Variables for time/date processing
        01  WS-ABSTIME                  PIC S9(8) COMP VALUE +0.
        01  WS-TIME                     PIC X(8)  VALUE SPACES.
        01  WS-DATE                     PIC X(10) VALUE SPACES.
 
-      * Error Message structure
        01  ERROR-MSG.
            03 EM-DATE                  PIC X(8)  VALUE SPACES.
            03 FILLER                   PIC X     VALUE SPACES.
@@ -55,34 +45,23 @@
            03 CA-DATA                  PIC X(90) VALUE SPACES.
       *----------------------------------------------------------------*
 
-      *----------------------------------------------------------------*
       * Definitions required for data manipulation                     *
       *----------------------------------------------------------------*
       * Fields to be used to calculate minimum commarea length required
-      * (for Endowment this does not allow for VARCHAR)
        01  WS-COMMAREA-LENGTHS.
            03 WS-CA-HEADER-LEN         PIC S9(4) COMP VALUE +28.
            03 WS-REQUIRED-CA-LEN       PIC S9(4) COMP VALUE +0.
 
-      * Define a WS-VARYing length character string to contain actual
       * amount of data that will be updated in Varchar field
        01 WS-VARY-FIELD.
           49 WS-VARY-LEN               PIC S9(4) COMP.
           49 WS-VARY-CHAR              PIC X(3900).
 
-      *----------------------------------------------------------------*
 
-      *----------------------------------------------------------------*
-      * Definitions required by SQL statement                          *
       *   DB2 datatypes to COBOL equivalents                           *
-      *     SMALLINT    :   PIC S9(4) COMP                             *
-      *     INTEGER     :   PIC S9(9) COMP                             *
-      *     DATE        :   PIC X(10)                                  *
-      *     TIMESTAMP   :   PIC X(26)                                  *
       *----------------------------------------------------------------*
       * Host variables for input to DB2 integer types
       * Any values specified in SQL stmts must be defined here so
-      * available to SQL pre-compiler
        01 DB2-IN-INTEGERS.
           03 DB2-CUSTOMERNUM-INT       PIC S9(9) COMP.
           03 DB2-POLICYNUM-INT         PIC S9(9) COMP.
@@ -97,14 +76,11 @@
           03 DB2-M-PREMIUM-INT         PIC S9(9) COMP.
           03 DB2-M-ACCIDENTS-INT       PIC S9(9) COMP.
 
-      *  Host variables to store result of DB2 Fetch
-      *  Must be an SQL INCLUDE so available to SQL pre-compiler
            EXEC SQL
              INCLUDE LGPOLICY
            END-EXEC.
 
       * Indicator variables for columns which could return nulls
-      *   if these are not specified and SQL FETCH tries to return
       *   null value for a listed column it will FAIL with SQLCODE=
        77  IND-BROKERID                PIC S9(4) COMP.
        77  IND-BROKERSREF              PIC S9(4) COMP.
@@ -112,19 +88,12 @@
        77  LGUPVS01                    Pic X(8) value 'LGUPVS01'.
       *----------------------------------------------------------------*
 
-      *----------------------------------------------------------------*
       *    DB2 CONTROL
       *----------------------------------------------------------------*
-      * SQLCA DB2 communications area
            EXEC SQL
              INCLUDE SQLCA
            END-EXEC.
 
-      *----------------------------------------------------------------*
-      * Declare Cursors
-      *----------------------------------------------------------------*
-      * Cursor to select details from policy table (with lock)
-      * will NOT update payment or commission fields
            EXEC SQL
              DECLARE POLICY_CURSOR CURSOR WITH HOLD FOR
                SELECT ISSUEDATE,
@@ -143,7 +112,6 @@
            END-EXEC.
 
       ******************************************************************
-      *    L I N K A G E     S E C T I O N
       ******************************************************************
        LINKAGE SECTION.
 
@@ -158,13 +126,8 @@
       ******************************************************************
        PROCEDURE DIVISION.
 
-      *----------------------------------------------------------------*
        MAINLINE SECTION.
 
-      *----------------------------------------------------------------*
-      * Common code                                                    *
-      *----------------------------------------------------------------*
-      * initialize working storage variables
            INITIALIZE WS-HEADER.
       * set up general variable
            MOVE EIBTRNID TO WS-TRANSID.
@@ -172,7 +135,6 @@
            MOVE EIBTASKN TO WS-TASKNUM.
            MOVE SPACES   TO WS-RETRY.
       *----------------------------------------------------------------*
-      * initialize DB2 host variables
            INITIALIZE DB2-POLICY.
            INITIALIZE DB2-IN-INTEGERS.
 
@@ -191,17 +153,13 @@
            MOVE EIBCALEN TO WS-CALEN.
            SET WS-ADDR-DFHCOMMAREA TO ADDRESS OF DFHCOMMAREA.
 
-      * Convert commarea customer & policy nums to DB2 integer format
            MOVE CA-CUSTOMER-NUM TO DB2-CUSTOMERNUM-INT
            MOVE CA-POLICY-NUM   TO DB2-POLICYNUM-INT
       * and save in error msg field incase required
            MOVE CA-CUSTOMER-NUM TO EM-CUSNUM
            MOVE CA-POLICY-NUM   TO EM-POLNUM
 
-      *----------------------------------------------------------------*
-      * Check which policy type is being requested                     *
       *   and check commarea length                                    *
-      *----------------------------------------------------------------*
 
       *    Call procedure to update required tables
            PERFORM UPDATE-POLICY-DB2-INFO.
@@ -219,11 +177,7 @@
            EXIT.
       *----------------------------------------------------------------*
 
-      *================================================================*
       * Fetch a row from Policy tables using POLICY-CURSOR             *
-      *   Host variables specified on INTO statement must correspond   *
-      *   in order and size to columns specified on SELECT statement   *
-      *   in CURSOR defintion.                                         *
       *================================================================*
        FETCH-DB2-POLICY-ROW.
            MOVE ' FETCH  ROW   ' TO EM-SQLREQ
@@ -239,18 +193,14 @@
            EXIT.
 
       *================================================================*
-      * 1) Use SELECT FOR UPDATE to obtain a lock on the row in the    *
       *    policy table, check that Timestamp in database matches that *
       *    received in commarea:                                       *
       * 2a) if not: unlock DB2 record, abandon update & return to user *
       * 2b) if match: update policy specific table with data from      *
       *     commarea                                                   *
-      * 3) update policy table with data from commarea and new         *
-      *    timestamp (which releases row lock on policy table)         *
       *================================================================*
        UPDATE-POLICY-DB2-INFO.
 
-      *    Open the cursor.
            MOVE ' OPEN   PCURSOR ' TO EM-SQLREQ
            EXEC SQL
              OPEN POLICY_CURSOR
@@ -278,21 +228,16 @@
              IF CA-LASTCHANGED EQUAL TO DB2-LASTCHANGED
 
       *----------------------------------------------------------------*
-      *      Select for Update and Update specific policy type table   *
-      *----------------------------------------------------------------*
              EVALUATE CA-REQUEST-ID
 
       *** Endowment ***
                WHEN '01UEND'
-      *          Call routine to update Endowment table
                  PERFORM UPDATE-ENDOW-DB2-INFO
 
       *** House ***
                WHEN '01UHOU'
-      *          Call routine to update Housetable
                  PERFORM UPDATE-HOUSE-DB2-INFO
 
-      *** Motor ***
                WHEN '01UMOT'
       *          Call routine to update Motor table
                  PERFORM UPDATE-MOTOR-DB2-INFO
@@ -300,14 +245,10 @@
              END-EVALUATE
       *----------------------------------------------------------------*
               IF CA-RETURN-CODE NOT EQUAL '00'
-      *         Update policy type specific table has failed
-      *         So close cursor and return
                 PERFORM CLOSE-PCURSOR
                 EXEC CICS RETURN END-EXEC
               END-IF
 
-      *----------------------------------------------------------------*
-      *        Now update Policy table and set new timestamp           *
       *----------------------------------------------------------------*
       *        Move numeric commarea fields to integer format
                MOVE CA-BROKERID      TO DB2-BROKERID-INT
@@ -325,7 +266,6 @@
                    WHERE CURRENT OF POLICY_CURSOR
                END-EXEC
 
-      *        get value of assigned Timestamp for return in commarea
                EXEC SQL
                  SELECT LASTCHANGED
                    INTO :CA-LASTCHANGED
@@ -334,15 +274,12 @@
                END-EXEC
 
                IF SQLCODE NOT EQUAL 0
-      *          Non-zero SQLCODE from Update of policy table
                    EXEC CICS SYNCPOINT ROLLBACK END-EXEC
                    MOVE '90' TO CA-RETURN-CODE
-      *            Write error message to TD QUEUE(CSMT)
                    PERFORM WRITE-ERROR-MESSAGE
                END-IF
 
              ELSE
-      *        Timestamps do not match (policy table v commarea)
                MOVE '02' TO CA-RETURN-CODE
              END-IF
 
@@ -380,13 +317,10 @@
            END-Evaluate.
            EXIT.
 
-      *================================================================*
       * Update row in Endowment table which matches customer and       *
       * policy number requested.                                       *
-      *================================================================*
        UPDATE-ENDOW-DB2-INFO.
 
-      *    Move numeric commarea fields to DB2 Integer formats
            MOVE CA-E-TERM        TO DB2-E-TERM-SINT
            MOVE CA-E-SUM-ASSURED TO DB2-E-SUMASSURED-INT
 
@@ -406,7 +340,6 @@
            END-EXEC
 
            IF SQLCODE NOT EQUAL 0
-      *      Non-zero SQLCODE from UPDATE statement
              IF SQLCODE EQUAL 100
                MOVE '01' TO CA-RETURN-CODE
              ELSE
@@ -417,13 +350,11 @@
            END-IF.
            EXIT.
 
-      *================================================================*
       * Update row in House table which matches customer and           *
       * policy number requested.                                       *
       *================================================================*
        UPDATE-HOUSE-DB2-INFO.
 
-      *    Move numeric commarea fields to DB2 Integer formats
            MOVE CA-H-BEDROOMS    TO DB2-H-BEDROOMS-SINT
            MOVE CA-H-VALUE       TO DB2-H-VALUE-INT
 
@@ -456,7 +387,6 @@
       *================================================================*
       * Update row in Motor table which matches customer and           *
       * policy number requested.                                       *
-      *================================================================*
        UPDATE-MOTOR-DB2-INFO.
 
       *    Move numeric commarea fields to DB2 Integer formats
@@ -483,12 +413,10 @@
            END-EXEC
 
            IF SQLCODE NOT EQUAL 0
-      *      Non-zero SQLCODE from UPDATE statement
              IF SQLCODE EQUAL 100
                MOVE '01' TO CA-RETURN-CODE
              ELSE
                MOVE '90' TO CA-RETURN-CODE
-      *        Write error message to TD QUEUE(CSMT)
                PERFORM WRITE-ERROR-MESSAGE
              END-IF
            END-IF.
@@ -496,13 +424,10 @@
 
       *================================================================*
       * Procedure to write error message to Queues                     *
-      *   message will include Date, Time, Program Name, Customer      *
-      *   Number, Policy Number and SQLCODE.                           *
       *================================================================*
        WRITE-ERROR-MESSAGE.
       * Save SQLCODE in message
            MOVE SQLCODE TO EM-SQLRC
-      * Obtain and format current time and date
            EXEC CICS ASKTIME ABSTIME(WS-ABSTIME)
            END-EXEC
            EXEC CICS FORMATTIME ABSTIME(WS-ABSTIME)
@@ -511,7 +436,6 @@
            END-EXEC
            MOVE WS-DATE TO EM-DATE
            MOVE WS-TIME TO EM-TIME
-      * Write output message to TDQ
            EXEC CICS LINK PROGRAM('LGSTSQ')
                      COMMAREA(ERROR-MSG)
                      LENGTH(LENGTH OF ERROR-MSG)

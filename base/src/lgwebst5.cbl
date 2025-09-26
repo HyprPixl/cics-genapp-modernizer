@@ -1,12 +1,6 @@
-      ******************************************************************
       *                                                                *
-      * (C) Copyright IBM Corp. 2011, 2020                             *
-      *                                                                *
-      * Used as repeating transaction for Business Monitor.            *
       *  Obtain values from counters and place statistics data         *
       *   in shared tsq. Will to refresh every 60 seconds...           *
-      *                                                                *
-      ******************************************************************
        IDENTIFICATION DIVISION.
        PROGRAM-ID. LGWEBST5
        ENVIRONMENT DIVISION.
@@ -242,7 +236,6 @@
            05 Comma-Data-High        Pic 9(10).
            05 FILLER                 Pic X(60).
 
-      *----------------------------------------------------------------*
       *****************************************************************
        PROCEDURE DIVISION.
 
@@ -255,7 +248,6 @@
            MOVE EIBTRMID TO WS-TERMID.
            MOVE EIBTASKN TO WS-TASKNUM.
            MOVE EIBCALEN TO WS-CALEN.
-      ****************************************************************
            MOVE 'GENA'  To TSQpre
            EXEC CICS ASKTIME ABSTIME(WS-ABSTIME)
            END-EXEC
@@ -412,7 +404,6 @@
            Compute CountErrors  = CountErrors + CountVal
            Move CountVal  To GENACNT699-V
            Move GENACNT699-V To S14
-      *
            Exec CICS Query Counter(GENACNT700)
                             Pool(GENApool)
                             Value(CountVal)
@@ -501,7 +492,6 @@
            Compute CountErrors  = CountErrors + CountVal
            Move CountVal  To GENACNTA99-V
            Move GENACNTA99-V To S22
-      *
            Exec CICS Query Counter(GENACNTB00)
                             Pool(GENApool)
                             Value(CountVal)
@@ -658,7 +648,6 @@
            Move CountVal  To GENACNTH99-V
            Move GENACNTH99-V To S36
 
-      *
            Exec CICS Query Counter(GENACNTI99)
                             Pool(GENApool)
                             Value(CountVal)
@@ -666,7 +655,6 @@
            End-Exec.
            Move CountVal  To GENACNTI99-V
            Move GENACNTI99-V To S37
-      *
            Move CountSuccess To GENAsucces-V
            Move Counterrors  To GENAerrors-V
            Move GENAsucces-V To S38
@@ -676,7 +664,6 @@
                   Into WS-TSQname
            Move S38          To NRateVal
            Perform Tran-Rate-Counts
-      *
            String TSQpre,
                   'X01V' Delimited By Spaces
                   Into WS-TSQname

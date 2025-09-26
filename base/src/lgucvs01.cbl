@@ -1,12 +1,6 @@
-      ******************************************************************
       *                                                                *
-      * (C) Copyright IBM Corp. 2011, 2020                             *
-      *                                                                *
-      *                    UPDATE Customer                                *
       *                                                                *
       * VSAM KSDS Customer record UPDATE                                  *
-      *                                                                *
-      ******************************************************************
        IDENTIFICATION DIVISION.
        PROGRAM-ID. LGUCVS01.
        ENVIRONMENT DIVISION.
@@ -50,22 +44,17 @@
        01  CUSTOMER-RECORD-SIZE        PIC S9(4) BINARY VALUE 0225.
 
       *****************************************************************
-      *    L I N K A G E     S E C T I O N
-      *****************************************************************
        LINKAGE SECTION.
        01  DFHCOMMAREA.
          Copy LGCMAREA.
 
       *----------------------------------------------------------------*
-      *****************************************************************
        PROCEDURE DIVISION.
 
       *---------------------------------------------------------------*
        MAINLINE SECTION.
       *
-      *---------------------------------------------------------------*
            Move EIBCALEN To WS-Commarea-Len.
-      *---------------------------------------------------------------*
            Exec CICS Read File('KSDSCUST')
                      Into(WS-Customer-Area)
                      Length(WS-Commarea-Len)
@@ -95,12 +84,10 @@
              EXEC CICS RETURN END-EXEC
            End-If.
 
-      *---------------------------------------------------------------*
 
        A-EXIT.
            EXIT.
            GOBACK.
-      *---------------------------------------------------------------*
        WRITE-ERROR-MESSAGE.
            EXEC CICS ASKTIME ABSTIME(WS-ABSTIME)
            END-EXEC

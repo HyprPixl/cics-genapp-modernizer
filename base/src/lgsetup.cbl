@@ -1,11 +1,4 @@
-      ******************************************************************
-      *                                                                *
-      * (C) Copyright IBM Corp. 2011, 2020                             *
-      *                                                                *
-      * Delete TSQ GENACNTL and put new low/high customer values       *
       *  to match DB2 restored database                                *
-      *                                                                *
-      * Recreate Named Counter GENACUSTNUM for next available customer *
       *  number.                                                       *
       *                                                                *
       ******************************************************************
@@ -35,7 +28,6 @@
        01  FILLER REDEFINES Read-MSG.
          03 FILLER                   PIC X(14).
          03 READ-CUST-HIGH           PIC 9(10).
-      ******************************
        01  WS-Cust-Low               Pic S9(10).
        01  WS-Cust-High              Pic S9(10).
        01  WS-Cust-Number            Pic X(10).
@@ -48,7 +40,6 @@
          03 WRITE-MSG-H              PIC X(14) Value 'HIGH CUSTOMER='.
          03 WRITE-MSG-High           PIC 9(10).
          03 FILLER                   Pic X(60).
-      *
        01  FrstCustNum               PIC S9(8)  Value +0000001.
        01  LastCustNum               PIC S9(8)  Value +0000011 COMP.
        01  GENAcount                 PIC X(16) Value 'GENACUSTNUM'.
@@ -102,14 +93,11 @@
        01 CA-AREA.
          03  CA-CUSTOMER-NUM         Pic X(10).
          03  Filler                  Pic X(72).
-      *
        77 MSGEND                     PIC X(24) VALUE
                                         'Transaction ended      '.
        77 F82                        Pic S9(4) Comp Value 82.
        77 F10                        Pic S9(4) Comp Value 10.
 
-      *****************************************************************
-      *    L I N K A G E     S E C T I O N
       *****************************************************************
        LINKAGE SECTION.
        01  DFHCOMMAREA.
@@ -122,7 +110,6 @@
       *****************************************************************
        PROCEDURE DIVISION.
 
-      *---------------------------------------------------------------*
        MAINLINE SECTION.
       *
            EXEC CICS RECEIVE INTO(WS-RECV)
@@ -133,8 +120,6 @@
              Subtract 5 From WS-RECV-LEN
              Move WS-RECV-DATA(1:WS-RECV-LEN)  To LastCustNum
            End-if
-      *
-      **************************************************
            Exec CICS DeleteQ TS Queue(STSQ-ERRS)
                      Resp(WS-RESP)
            End-Exec.
@@ -175,7 +160,6 @@
                        LENGTH(24)
              END-EXEC
       *
-      **************************************************
            Exec CICS Delete Counter(GENAcount)
                             Pool(GENApool)
                             Resp(WS-RESP)
@@ -368,7 +352,6 @@
                             Value(0)
                             Resp(WS-RESP)
            End-Exec.
-      *
            Exec CICS Delete Counter(GENACNTB00)
                             Pool(GENApool)
                             Resp(WS-RESP)
@@ -441,7 +424,6 @@
                             Value(0)
                             Resp(WS-RESP)
            End-Exec.
-      *
            Exec CICS Delete Counter(GENACNTF00)
                             Pool(GENApool)
                             Resp(WS-RESP)

@@ -1,12 +1,6 @@
       ******************************************************************
       *                                                                *
-      * (C) Copyright IBM Corp. 2011, 2020                             *
-      *                                                                *
       *                    ADD Customer                                *
-      *                                                                *
-      *   Business logic for adding a new customer                     *
-      *                                                                *
-      ******************************************************************
        IDENTIFICATION DIVISION.
        PROGRAM-ID. LGACUS01.
        ENVIRONMENT DIVISION.
@@ -18,8 +12,6 @@
 
       *----------------------------------------------------------------*
       * Common defintions                                              *
-      *----------------------------------------------------------------*
-      * Run time (debug) infomation for this invocation
         01  WS-HEADER.
            03 WS-EYECATCHER            PIC X(16)
                                         VALUE 'LGACUS01------WS'.
@@ -30,12 +22,10 @@
            03 WS-ADDR-DFHCOMMAREA      USAGE is POINTER.
            03 WS-CALEN                 PIC S9(4) COMP.
 
-      * Variables for time/date processing
        01  WS-ABSTIME                  PIC S9(8) COMP VALUE +0.
        01  WS-TIME                     PIC X(8)  VALUE SPACES.
        01  WS-DATE                     PIC X(10) VALUE SPACES.
 
-      * Error Message structure
        01  ERROR-MSG.
            03 EM-DATE                  PIC X(8)  VALUE SPACES.
            03 FILLER                   PIC X     VALUE SPACES.
@@ -48,7 +38,6 @@
            03 CA-DATA                  PIC X(90) VALUE SPACES.
       *----------------------------------------------------------------*
 
-      *----------------------------------------------------------------*
       * Definitions required for data manipulation                     *
       *----------------------------------------------------------------*
       * Fields to be used to check that commarea is correct length
@@ -69,9 +58,6 @@
        01  DFHCOMMAREA.
              COPY LGCMAREA.
 
-      ******************************************************************
-      *    P R O C E D U R E S
-      ******************************************************************
        PROCEDURE DIVISION.
 
       *----------------------------------------------------------------*
@@ -79,17 +65,12 @@
 
       *----------------------------------------------------------------*
       * Common code                                                    *
-      *----------------------------------------------------------------*
       * initialize working storage variables
            INITIALIZE WS-HEADER.
-      * set up general variable
            MOVE EIBTRNID TO WS-TRANSID.
            MOVE EIBTRMID TO WS-TERMID.
            MOVE EIBTASKN TO WS-TASKNUM.
-      *----------------------------------------------------------------*
 
-      *----------------------------------------------------------------*
-      * Process incoming commarea                                      *
       *----------------------------------------------------------------*
       * If NO commarea received issue an ABEND
            IF EIBCALEN IS EQUAL TO ZERO
@@ -98,7 +79,6 @@
                EXEC CICS ABEND ABCODE('LGCA') NODUMP END-EXEC
            END-IF
 
-      * initialize commarea return code to zero
            MOVE '00' TO CA-RETURN-CODE
            MOVE '00' TO CA-NUM-POLICIES
            MOVE EIBCALEN TO WS-CALEN.
@@ -114,7 +94,6 @@
              EXEC CICS RETURN END-EXEC
            END-IF
 
-      *----------------------------------------------------------------*
       * Call routine to Insert row in DB2 Customer table               *
            PERFORM INSERT-CUSTOMER.
       
@@ -124,11 +103,7 @@
 
        MAINLINE-EXIT.
            EXIT.
-      *----------------------------------------------------------------*
 
-      *----------------------------------------------------------------*
-      * DB2                                                            *
-      *----------------------------------------------------------------*
        INSERT-CUSTOMER.
 
            EXEC CICS LINK Program(LGACDB01)
@@ -139,14 +114,10 @@
 
            EXIT.
 
-      *================================================================*
       * Procedure to write error message to Queues                     *
-      *   message will include Date, Time, Program Name, Customer      *
       *   Number, Policy Number and SQLCODE.                           *
       *================================================================*
        WRITE-ERROR-MESSAGE.
-      * Save SQLCODE in message
-      * Obtain and format current time and date
            EXEC CICS ASKTIME ABSTIME(WS-ABSTIME)
            END-EXEC
            EXEC CICS FORMATTIME ABSTIME(WS-ABSTIME)
@@ -160,7 +131,6 @@
                      COMMAREA(ERROR-MSG)
                      LENGTH(LENGTH OF ERROR-MSG)
            END-EXEC.
-      * Write 90 bytes or as much as we have of commarea to TDQ
            IF EIBCALEN > 0 THEN
              IF EIBCALEN < 91 THEN
                MOVE DFHCOMMAREA(1:EIBCALEN) TO CA-DATA

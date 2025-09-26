@@ -1,12 +1,6 @@
       ******************************************************************
       *                                                                *
-      * (C) Copyright IBM Corp. 2011, 2020                             *
-      *                                                                *
       *                    ADD Policy                                  *
-      *                                                                *
-      *  Add Policy business logic                                     *
-      *   To add full details of an individual policy:                 *
-      *     Endowment, House, Motor, Commercial                        *
       *                                                                *
       ******************************************************************
        IDENTIFICATION DIVISION.
@@ -18,10 +12,6 @@
 
        WORKING-STORAGE SECTION.
 
-      *----------------------------------------------------------------*
-      * Common defintions                                              *
-      *----------------------------------------------------------------*
-      * Run time (debug) infomation for this invocation
         01  WS-HEADER.
            03 WS-EYECATCHER            PIC X(16)
                                         VALUE 'LGAPOL01------WS'.
@@ -37,7 +27,6 @@
        01  TIME1                       PIC X(8)  VALUE SPACES.
        01  DATE1                       PIC X(10) VALUE SPACES.
 
-      * Error Message structure
        01  ERROR-MSG.
            03 EM-DATE                  PIC X(8)  VALUE SPACES.
            03 FILLER                   PIC X     VALUE SPACES.
@@ -49,7 +38,6 @@
            03 FILLER                   PIC X(9)  VALUE 'COMMAREA='.
            03 CA-DATA                  PIC X(90) VALUE SPACES.
        01  LGAPDB01                    PIC X(8)  VALUE 'LGAPDB01'.
-      *----------------------------------------------------------------*
 
       *----------------------------------------------------------------*
       * Definitions required for data manipulation                     *
@@ -64,7 +52,6 @@
 
       ******************************************************************
       *    L I N K A G E     S E C T I O N
-      ******************************************************************
        LINKAGE SECTION.
 
        01  DFHCOMMAREA.
@@ -72,17 +59,13 @@
 
 
       ******************************************************************
-      *    P R O C E D U R E S
-      ******************************************************************
        PROCEDURE DIVISION.
 
       *----------------------------------------------------------------*
        MAINLINE SECTION.
 
       *----------------------------------------------------------------*
-      * Common code                                                    *
       *----------------------------------------------------------------*
-      * initialize working storage variables
            INITIALIZE WS-HEADER.
       * set up general variable
            MOVE EIBTRNID TO WS-TRANSID.
@@ -91,10 +74,8 @@
            MOVE EIBCALEN TO WS-CALEN.
       *----------------------------------------------------------------*
 
-      *----------------------------------------------------------------*
       * Check commarea and obtain required details                     *
       *----------------------------------------------------------------*
-      * If NO commarea received issue an ABEND
            IF EIBCALEN IS EQUAL TO ZERO
                MOVE ' NO COMMAREA RECEIVED' TO EM-VARIABLE
                PERFORM WRITE-ERROR-MESSAGE
@@ -109,15 +90,12 @@
            ADD WS-CA-HEADER-LEN TO WS-REQUIRED-CA-LEN
 
 
-      *    if less set error return code and return to caller
            IF EIBCALEN IS LESS THAN WS-REQUIRED-CA-LEN
              MOVE '98' TO CA-RETURN-CODE
              EXEC CICS RETURN END-EXEC
            END-IF
 
-      *----------------------------------------------------------------*
       *    Perform the data Inserts                                    *
-      *----------------------------------------------------------------*
            EXEC CICS Link Program(LGAPDB01)
                 Commarea(DFHCOMMAREA)
                 LENGTH(32500)
@@ -127,16 +105,11 @@
 
        MAINLINE-EXIT.
            EXIT.
-      *----------------------------------------------------------------*
 
       *================================================================*
-      * Procedure to write error message to Queues                     *
-      *   message will include Date, Time, Program Name, Customer      *
       *   Number, Policy Number and SQLCODE.                           *
       *================================================================*
        WRITE-ERROR-MESSAGE.
-      * Save SQLCODE in message
-      * Obtain and format current time and date
            EXEC CICS ASKTIME ABSTIME(ABS-TIME)
            END-EXEC
            EXEC CICS FORMATTIME ABSTIME(ABS-TIME)
@@ -150,7 +123,6 @@
                      COMMAREA(ERROR-MSG)
                      LENGTH(LENGTH OF ERROR-MSG)
            END-EXEC.
-      * Write 90 bytes or as much as we have of commarea to TDQ
            IF EIBCALEN > 0 THEN
              IF EIBCALEN < 91 THEN
                MOVE DFHCOMMAREA(1:EIBCALEN) TO CA-DATA

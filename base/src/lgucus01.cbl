@@ -1,12 +1,6 @@
       ******************************************************************
       *                                                                *
-      * (C) Copyright IBM Corp. 2011, 2020                             *
-      *                                                                *
       *                     UPDATE customer details                    *
-      *                                                                *
-      * Business transaction logic                                     *
-      *                                                                *
-      ******************************************************************
        IDENTIFICATION DIVISION.
        PROGRAM-ID. LGUCUS01.
        ENVIRONMENT DIVISION.
@@ -18,8 +12,6 @@
 
       *----------------------------------------------------------------*
       * Common defintions                                              *
-      *----------------------------------------------------------------*
-      * Run time (debug) infomation for this invocation
         01  WS-HEADER.
            03 WS-EYECATCHER            PIC X(16)
                                         VALUE 'LGUCUS01------WS'.
@@ -30,12 +22,10 @@
            03 WS-ADDR-DFHCOMMAREA      USAGE is POINTER.
            03 WS-CALEN                 PIC S9(4) COMP.
 
-      * Variables for time/date processing
        01  WS-ABSTIME                  PIC S9(8) COMP VALUE +0.
        01  WS-TIME                     PIC X(8)  VALUE SPACES.
        01  WS-DATE                     PIC X(10) VALUE SPACES.
 
-      * Error Message structure
        01  ERROR-MSG.
            03 EM-DATE                  PIC X(8)  VALUE SPACES.
            03 FILLER                   PIC X     VALUE SPACES.
@@ -48,16 +38,13 @@
            03 CA-DATA                  PIC X(90) VALUE SPACES.
       *----------------------------------------------------------------*
 
-      *----------------------------------------------------------------*
       * Definitions required for data manipulation                     *
       *----------------------------------------------------------------*
-      * Fields to be used to calculate minimum commarea length required
       * (for Endowment this does not allow for VARCHAR)
        01  WS-COMMAREA-LENGTHS.
            03 WS-CA-HEADER-LEN         PIC S9(4) COMP VALUE +28.
            03 WS-REQUIRED-CA-LEN       PIC S9(4) COMP VALUE +0.
 
-      * Define a WS-VARYing length character string to contain actual
       * amount of data that will be updated in Varchar field
        01 WS-VARY-FIELD.
           49 WS-VARY-LEN               PIC S9(4) COMP.
@@ -74,18 +61,14 @@
              COPY LGCMAREA.
 
 
-      ******************************************************************
       *    P R O C E D U R E S
       ******************************************************************
        PROCEDURE DIVISION.
 
-      *----------------------------------------------------------------*
        MAINLINE SECTION.
 
       *----------------------------------------------------------------*
-      * Common code                                                    *
       *----------------------------------------------------------------*
-      * initialize working storage variables
            INITIALIZE WS-HEADER.
       * set up general variable
            MOVE EIBTRNID TO WS-TRANSID.
@@ -93,7 +76,6 @@
            MOVE EIBTASKN TO WS-TASKNUM.
 
       *----------------------------------------------------------------*
-      * Check commarea and obtain required details                     *
       *----------------------------------------------------------------*
       * If NO commarea received issue an ABEND
            IF EIBCALEN IS EQUAL TO ZERO
@@ -101,7 +83,6 @@
                PERFORM WRITE-ERROR-MESSAGE
                EXEC CICS ABEND ABCODE('LGCA') NODUMP END-EXEC
            END-IF
-      * initialize commarea return code to zero
            MOVE '00' TO CA-RETURN-CODE
            MOVE '00' TO CA-NUM-POLICIES
            MOVE EIBCALEN TO WS-CALEN.
@@ -112,7 +93,6 @@
                GO TO END-PROGRAM
            END-IF.
 
-      *    Call procedure to update required tables
            PERFORM UPDATE-CUSTOMER-INFO.
 
       * Return to caller
@@ -122,7 +102,6 @@
        MAINLINE-EXIT.
            EXIT.
 
-      *----------------------------------------------------------------*
        UPDATE-CUSTOMER-INFO.
 
            EXEC CICS LINK Program(LGUCDB01)
@@ -134,12 +113,8 @@
 
       *================================================================*
       * Procedure to write error message to Queues                     *
-      *   message will include Date, Time, Program Name, Customer      *
-      *   Number, Policy Number and SQLCODE.                           *
-      *================================================================*
        WRITE-ERROR-MESSAGE.
       * Save SQLCODE in message
-      * Obtain and format current time and date
            EXEC CICS ASKTIME ABSTIME(WS-ABSTIME)
            END-EXEC
            EXEC CICS FORMATTIME ABSTIME(WS-ABSTIME)
@@ -153,7 +128,6 @@
                      COMMAREA(ERROR-MSG)
                      LENGTH(LENGTH OF ERROR-MSG)
            END-EXEC.
-      * Write 90 bytes or as much as we have of commarea to TDQ
            IF EIBCALEN > 0 THEN
              IF EIBCALEN < 91 THEN
                MOVE DFHCOMMAREA(1:EIBCALEN) TO CA-DATA
