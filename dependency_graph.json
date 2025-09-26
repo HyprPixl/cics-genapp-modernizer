@@ -1,9 +1,49 @@
 {
   "nodes": {
-    "LGAPDB01": {
+    "DB2.COMMERCIAL": {
       "depends_on": [],
-      "description": null,
-      "type": null
+      "description": "Commercial policy extension",
+      "type": "db2-table"
+    },
+    "DB2.ENDOWMENT": {
+      "depends_on": [],
+      "description": "Endowment policy details",
+      "type": "db2-table"
+    },
+    "DB2.HOUSE": {
+      "depends_on": [],
+      "description": "House policy extension",
+      "type": "db2-table"
+    },
+    "DB2.MOTOR": {
+      "depends_on": [],
+      "description": "Motor policy extension",
+      "type": "db2-table"
+    },
+    "DB2.POLICY": {
+      "depends_on": [],
+      "description": "Core policy header table",
+      "type": "db2-table"
+    },
+    "KSDSPOLY": {
+      "depends_on": [],
+      "description": "VSAM cluster for policy summaries",
+      "type": "vsam-file"
+    },
+    "LGAPDB01": {
+      "depends_on": [
+        "DB2.COMMERCIAL",
+        "DB2.ENDOWMENT",
+        "DB2.HOUSE",
+        "DB2.MOTOR",
+        "DB2.POLICY",
+        "LGAPVS01",
+        "LGCMAREA",
+        "LGPOLICY",
+        "LGSTSQ"
+      ],
+      "description": "DB2-backed policy add service",
+      "type": "cobol"
     },
     "LGAPOL01": {
       "depends_on": [
@@ -14,15 +54,29 @@
       "description": "Add policy front-end program",
       "type": "cobol"
     },
+    "LGAPVS01": {
+      "depends_on": [
+        "KSDSPOLY",
+        "LGCMAREA",
+        "LGSTSQ"
+      ],
+      "description": "VSAM writer for policy records",
+      "type": "cobol"
+    },
     "LGCMAREA": {
       "depends_on": [],
-      "description": null,
-      "type": null
+      "description": "Shared commarea layout",
+      "type": "copybook"
+    },
+    "LGPOLICY": {
+      "depends_on": [],
+      "description": "Embedded SQL host variable definitions",
+      "type": "sql-include"
     },
     "LGSTSQ": {
       "depends_on": [],
-      "description": null,
-      "type": null
+      "description": "TDQ logger for diagnostics",
+      "type": "cobol"
     }
   }
 }
