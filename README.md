@@ -141,6 +141,28 @@
 - Error Handling: returns `01` for policy not found, `02` for timestamp mismatch (concurrent update), `90` for SQL errors; includes transaction rollback on failures and comprehensive cursor cleanup.
 - Notes: uses DB2 cursor with FOR UPDATE to lock policy records; validates last-changed timestamp to detect concurrent modifications; updates both main POLICY table and policy-type-specific tables; refreshes timestamp and synchronizes to VSAM on successful completion.
 
+## Shared Copybooks & Reference Data Structures
+
+### POLLOOK – Generic Policy Lookup Request Structure
+- Purpose: standardized request layout for policy inquiry operations, particularly used in web service and mobile interfaces.
+- Structure: 
+  - `CA-REQUEST-ID` (PIC X(6)): 6-character request type identifier
+  - `CA-CUSTOMER-NUM` (PIC 9(10) DISPLAY): 10-digit customer number for targeted inquiries
+  - `CA-REQUEST-SPECIFIC` (PIC X(32482)): flexible 32,482-byte data area for request-specific parameters
+- Usage Context: referenced in `wsaip01.jcl` for DFHLS2WS web service generation with mobile inquiry program `IPPROGMB`.
+- Design Notes: provides generic request template supporting multiple inquiry types through variable request-specific data area; total structure size of 32,498 bytes accommodates complex inquiry payloads.
+
+### POLLOO2 – Customer Policy List Response Structure  
+- Purpose: structured response layout for returning multiple policy summaries, designed for customer policy list inquiries.
+- Structure:
+  - `CA-CUSPOL-REQUEST` group containing:
+    - `CA-POLICIES` (OCCURS 5 TIMES): array of up to 5 policy summary records
+      - `CA-POLICY-NUMBER` (PIC 9(10) DISPLAY): 10-digit policy identifier
+      - `CA-POLICY-TYPE` (PIC X(1) DISPLAY): single-character policy type code (`C`, `E`, `H`, `M`)
+  - `CA-POLICY-DATA` (PIC X(32427)): 32,427-byte area for detailed policy information
+- Usage Context: companion response structure to `POLLOOK`; used in web service generation for mobile policy inquiry interfaces.
+- Design Notes: supports batch policy retrieval with up to 5 policies per response; policy type codes align with GenApp policy categories (Commercial, Endowment, House, Motor); total structure size of 32,482 bytes matches `POLLOOK` request sizing for consistent data exchange.
+
 ## Immediate Findings & Questions
 - `install.sh` expects `tsocmd` and USS `cp` with dataset support; confirm environment prerequisites.
 - Customer experience assets hint at established monitoring and test flows; identify current owners.

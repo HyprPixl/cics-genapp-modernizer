@@ -260,6 +260,18 @@
       ],
       "description": "Update policy VSAM service",
       "type": "cobol"
+    },
+    "POLLOO2": {
+      "depends_on": [
+        "POLLOOK"
+      ],
+      "description": "Customer policy list response structure with 5-policy array for mobile interfaces",
+      "type": "copybook"
+    },
+    "POLLOOK": {
+      "depends_on": [],
+      "description": "Generic policy lookup request structure for web service interfaces",
+      "type": "copybook"
     }
   }
 }
