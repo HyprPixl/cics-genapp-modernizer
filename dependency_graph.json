@@ -1,5 +1,10 @@
 {
   "nodes": {
+    "#SSVARS.TXT": {
+      "depends_on": [],
+      "description": "Workload simulator shared variables and constants definition file containing counters, strings, and EBCDIC/ASCII conversion tables",
+      "type": "simulation-config"
+    },
     "ADEF121": {
       "depends_on": [
         "KSDSCUST",
@@ -14,6 +19,11 @@
       ],
       "description": "BMS map assembly for CICS screen definitions",
       "type": "jcl"
+    },
+    "CCOLOR": {
+      "depends_on": [],
+      "description": "Car color lookup table - MSGUTBL providing 26 vehicle color options for motor insurance policy simulation",
+      "type": "reference-data"
     },
     "CDEF121": {
       "depends_on": [],
@@ -40,6 +50,16 @@
       "description": "WUI (Web User Interface) server for browser-based CICS administration",
       "type": "jcl"
     },
+    "CMAKE": {
+      "depends_on": [],
+      "description": "Car make lookup table - MSGUTBL providing 21 vehicle manufacturer options for motor insurance policy simulation",
+      "type": "reference-data"
+    },
+    "CMODEL": {
+      "depends_on": [],
+      "description": "Car model lookup table - MSGUTBL providing 23 vehicle model options for motor insurance policy simulation",
+      "type": "reference-data"
+    },
     "COBOL": {
       "depends_on": [
         "LGACDB01",
@@ -64,6 +84,11 @@
       ],
       "description": "Enterprise COBOL compilation procedure with CICS and DB2 preprocessing",
       "type": "jcl"
+    },
+    "CTYPE": {
+      "depends_on": [],
+      "description": "Coverage type lookup table - MSGUTBL providing 13 insurance coverage and risk types for policy simulation",
+      "type": "reference-data"
     },
     "CUST1.REXX": {
       "depends_on": [
@@ -155,6 +180,44 @@
       "description": "CPSM workload repository setup",
       "type": "jcl"
     },
+    "FNAME": {
+      "depends_on": [],
+      "description": "First names lookup table - MSGUTBL providing standard first names for customer data simulation and testing",
+      "type": "reference-data"
+    },
+    "GENAPP.TXT": {
+      "depends_on": [
+        "#SSVARS.TXT",
+        "ONCICS",
+        "SSC1A1",
+        "SSC1I1",
+        "SSP1A1",
+        "SSP1D1",
+        "SSP1I1",
+        "SSP1U1",
+        "SSP2A1",
+        "SSP2D1",
+        "SSP2I1",
+        "SSP2U1",
+        "SSP3A1",
+        "SSP3D1",
+        "SSP3I1",
+        "SSP3U1",
+        "SSP4A1",
+        "SSP4D1",
+        "SSP4I1",
+        "STOP",
+        "WSC1A1",
+        "WSC1I1"
+      ],
+      "description": "Main workload simulator configuration file defining network settings, transaction paths, and simulation parameters",
+      "type": "simulation-config"
+    },
+    "HTYPE": {
+      "depends_on": [],
+      "description": "House type lookup table - MSGUTBL providing 17 residential property types for house insurance policy simulation",
+      "type": "reference-data"
+    },
     "ITPENTR": {
       "depends_on": [],
       "description": "Interactive test environment setup for terminal emulation",
@@ -175,10 +238,24 @@
       "description": "VSAM cluster for customer summaries",
       "type": "vsam-file"
     },
+    "KSDSCUST.TXT": {
+      "depends_on": [
+        "LGCMAREA"
+      ],
+      "description": "Customer sample dataset: 10 test customer records, 225-byte fixed length, contains customer numbers, names, addresses, phone numbers, and email addresses",
+      "type": "sample-data"
+    },
     "KSDSPOLY": {
       "depends_on": [],
       "description": "VSAM cluster for policy summaries",
       "type": "vsam-file"
+    },
+    "KSDSPOLY.TXT": {
+      "depends_on": [
+        "LGCMAREA"
+      ],
+      "description": "Policy sample dataset: 10 test policy records, 64-byte fixed length, covers all four policy types (C/E/H/M) with realistic UK-specific data",
+      "type": "sample-data"
     },
     "LGACDB01": {
       "depends_on": [
@@ -211,6 +288,7 @@
     },
     "LGACVS01": {
       "depends_on": [
+        "KSDSCUST.TXT",
         "LGCMAREA",
         "LGSTSQ"
       ],
@@ -252,8 +330,13 @@
     },
     "LGASTAT1": {
       "depends_on": [],
-      "description": null,
-      "type": null
+      "description": "CICS event processing handler for business transaction statistics collection",
+      "type": "cobol"
+    },
+    "LGCF": {
+      "depends_on": [],
+      "description": "Customer context establishment transaction - sets up customer session for policy operations",
+      "type": "cics-transaction"
     },
     "LGCMAREA": {
       "depends_on": [],
@@ -308,9 +391,11 @@
       "type": "cobol"
     },
     "LGICVS01": {
-      "depends_on": [],
-      "description": null,
-      "type": null
+      "depends_on": [
+        "KSDSCUST.TXT"
+      ],
+      "description": "Customer inquiry VSAM service",
+      "type": "cobol"
     },
     "LGIPDB01": {
       "depends_on": [
@@ -340,6 +425,11 @@
       "description": null,
       "type": null
     },
+    "LGPF": {
+      "depends_on": [],
+      "description": "Policy finder transaction - locates existing policies by customer and type for inquiry/update/delete operations",
+      "type": "cics-transaction"
+    },
     "LGPOLICY": {
       "depends_on": [],
       "description": "Embedded SQL host variable definitions",
@@ -349,6 +439,13 @@
       "depends_on": [],
       "description": null,
       "type": null
+    },
+    "LGST": {
+      "depends_on": [
+        "LGASTAT1"
+      ],
+      "description": "CICS transaction for event processing and statistics collection via LGASTAT1 program",
+      "type": "cics-transaction"
     },
     "LGSTSQ": {
       "depends_on": [],
@@ -378,6 +475,7 @@
     "LGUCVS01": {
       "depends_on": [
         "KSDSCUST",
+        "KSDSCUST.TXT",
         "LGCMAREA",
         "LGSTSQ"
       ],
@@ -421,6 +519,28 @@
       "description": "ISPF edit macro for systematic parameter substitution",
       "type": "rexx"
     },
+    "ONCICS": {
+      "depends_on": [
+        "#SSVARS.TXT"
+      ],
+      "description": "CICS connection recovery and terminal initialization for workload simulation",
+      "type": "simulation-script"
+    },
+    "PCODE": {
+      "depends_on": [],
+      "description": "Postal code lookup table - MSGUTBL providing UK postal codes for address simulation and testing",
+      "type": "reference-data"
+    },
+    "PTYPE": {
+      "depends_on": [],
+      "description": "Property type lookup table - MSGUTBL providing 17 commercial property types for business insurance policy simulation",
+      "type": "reference-data"
+    },
+    "RTYPE": {
+      "depends_on": [],
+      "description": "Road type lookup table - MSGUTBL providing street type abbreviations for address formatting",
+      "type": "reference-data"
+    },
     "SAMPCMA": {
       "depends_on": [],
       "description": "CICS Management Agent testing for CICSPlex operations",
@@ -444,6 +564,11 @@
       ],
       "description": "Web User Interface component validation",
       "type": "jcl"
+    },
+    "SNAME": {
+      "depends_on": [],
+      "description": "Surname lookup table - MSGUTBL providing standard surnames for customer data simulation and testing",
+      "type": "reference-data"
     },
     "SOAIC01": {
       "depends_on": [],
@@ -470,10 +595,259 @@
       "description": null,
       "type": null
     },
+    "SSC1A1": {
+      "depends_on": [
+        "#SSVARS.TXT",
+        "LGACUS01",
+        "SSC1A2",
+        "FNAME",
+        "PCODE",
+        "SNAME"
+      ],
+      "description": "Customer add simulation script - automates customer creation via SSC1 transaction",
+      "type": "simulation-script"
+    },
+    "SSC1A2": {
+      "depends_on": [
+        "FNAME",
+        "PCODE",
+        "SNAME"
+      ],
+      "description": "Customer data generation module - provides variable data for customer add simulation scripts",
+      "type": "simulation-data"
+    },
+    "SSC1I1": {
+      "depends_on": [
+        "#SSVARS.TXT",
+        "LGCF",
+        "LGICUS01"
+      ],
+      "description": "Customer inquiry simulation script - automates customer lookup via SSC1 transaction",
+      "type": "simulation-script"
+    },
     "SSMAP": {
       "depends_on": [],
       "description": null,
       "type": null
+    },
+    "SSP1A1": {
+      "depends_on": [
+        "#SSVARS.TXT",
+        "LGAPOL01",
+        "LGCF",
+        "SSP1A2",
+        "CCOLOR",
+        "CMAKE",
+        "CMODEL"
+      ],
+      "description": "Motor policy add simulation script - automates motor insurance policy creation via SSP1 transaction",
+      "type": "simulation-script"
+    },
+    "SSP1A2": {
+      "depends_on": [
+        "CCOLOR",
+        "CMAKE",
+        "CMODEL"
+      ],
+      "description": "Motor policy data generation module - provides variable data for motor policy add simulation scripts",
+      "type": "simulation-data"
+    },
+    "SSP1D1": {
+      "depends_on": [
+        "#SSVARS.TXT",
+        "LGCF",
+        "LGDPOL01",
+        "LGPF"
+      ],
+      "description": "Motor policy delete simulation script - automates motor policy deletion via SSP1 transaction",
+      "type": "simulation-script"
+    },
+    "SSP1I1": {
+      "depends_on": [
+        "#SSVARS.TXT",
+        "LGCF",
+        "LGIPOL01",
+        "LGPF"
+      ],
+      "description": "Motor policy inquiry simulation script - automates motor policy lookup via SSP1 transaction and LGPF finder",
+      "type": "simulation-script"
+    },
+    "SSP1U1": {
+      "depends_on": [
+        "#SSVARS.TXT",
+        "LGCF",
+        "LGPF",
+        "LGUPOL01",
+        "CCOLOR",
+        "CMAKE",
+        "CMODEL"
+      ],
+      "description": "Motor policy update simulation script - automates motor policy modifications via SSP1 transaction",
+      "type": "simulation-script"
+    },
+    "SSP2A1": {
+      "depends_on": [
+        "#SSVARS.TXT",
+        "LGAPOL01",
+        "LGCF",
+        "SSP2A2",
+        "FNAME",
+        "SNAME"
+      ],
+      "description": "Endowment policy add simulation script - automates life insurance policy creation via SSP2 transaction",
+      "type": "simulation-script"
+    },
+    "SSP2A2": {
+      "depends_on": [
+        "FNAME",
+        "SNAME"
+      ],
+      "description": "Endowment policy data generation module - provides variable data for endowment policy add simulation scripts",
+      "type": "simulation-data"
+    },
+    "SSP2D1": {
+      "depends_on": [
+        "#SSVARS.TXT",
+        "LGCF",
+        "LGDPOL01",
+        "LGPF"
+      ],
+      "description": "Endowment policy delete simulation script - automates endowment policy deletion via SSP2 transaction",
+      "type": "simulation-script"
+    },
+    "SSP2I1": {
+      "depends_on": [
+        "#SSVARS.TXT",
+        "LGCF",
+        "LGIPOL01",
+        "LGPF"
+      ],
+      "description": "Endowment policy inquiry simulation script - automates endowment policy lookup via SSP2 transaction",
+      "type": "simulation-script"
+    },
+    "SSP2U1": {
+      "depends_on": [
+        "#SSVARS.TXT",
+        "LGCF",
+        "LGPF",
+        "LGUPOL01",
+        "FNAME",
+        "SNAME"
+      ],
+      "description": "Endowment policy update simulation script - automates endowment policy modifications via SSP2 transaction",
+      "type": "simulation-script"
+    },
+    "SSP3A1": {
+      "depends_on": [
+        "#SSVARS.TXT",
+        "LGAPOL01",
+        "LGCF",
+        "SSP3A2",
+        "FNAME",
+        "HTYPE",
+        "PCODE",
+        "SNAME"
+      ],
+      "description": "House policy add simulation script - automates house insurance policy creation via SSP3 transaction",
+      "type": "simulation-script"
+    },
+    "SSP3A2": {
+      "depends_on": [
+        "FNAME",
+        "HTYPE",
+        "PCODE",
+        "SNAME"
+      ],
+      "description": "House policy data generation module - provides variable data for house policy add simulation scripts",
+      "type": "simulation-data"
+    },
+    "SSP3D1": {
+      "depends_on": [
+        "#SSVARS.TXT",
+        "LGCF",
+        "LGDPOL01",
+        "LGPF"
+      ],
+      "description": "House policy delete simulation script - automates house policy deletion via SSP3 transaction",
+      "type": "simulation-script"
+    },
+    "SSP3I1": {
+      "depends_on": [
+        "#SSVARS.TXT",
+        "LGCF",
+        "LGIPOL01",
+        "LGPF"
+      ],
+      "description": "House policy inquiry simulation script - automates house policy lookup via SSP3 transaction",
+      "type": "simulation-script"
+    },
+    "SSP3U1": {
+      "depends_on": [
+        "#SSVARS.TXT",
+        "LGCF",
+        "LGPF",
+        "LGUPOL01",
+        "FNAME",
+        "HTYPE",
+        "PCODE",
+        "SNAME"
+      ],
+      "description": "House policy update simulation script - automates house policy modifications via SSP3 transaction",
+      "type": "simulation-script"
+    },
+    "SSP4A1": {
+      "depends_on": [
+        "#SSVARS.TXT",
+        "LGAPOL01",
+        "LGCF",
+        "FNAME",
+        "PCODE",
+        "PTYPE",
+        "RTYPE",
+        "SNAME"
+      ],
+      "description": "Commercial policy add simulation script - automates commercial property policy creation via SSP4 transaction",
+      "type": "simulation-script"
+    },
+    "SSP4D1": {
+      "depends_on": [
+        "#SSVARS.TXT",
+        "LGCF",
+        "LGDPOL01",
+        "LGPF"
+      ],
+      "description": "Commercial policy delete simulation script - automates commercial policy deletion via SSP4 transaction",
+      "type": "simulation-script"
+    },
+    "SSP4I1": {
+      "depends_on": [
+        "#SSVARS.TXT",
+        "LGCF",
+        "LGIPOL01",
+        "LGPF"
+      ],
+      "description": "Commercial policy inquiry simulation script - automates commercial policy lookup via SSP4 transaction",
+      "type": "simulation-script"
+    },
+    "STOP": {
+      "depends_on": [
+        "#SSVARS.TXT"
+      ],
+      "description": "Simulation termination handler with graceful resource cleanup",
+      "type": "simulation-script"
+    },
+    "Transaction_Counters.evbind": {
+      "depends_on": [
+        "LGASTAT1",
+        "LGST"
+      ],
+      "description": "CICS Event Processing configuration for business transaction monitoring and statistics collection",
+      "type": "monitoring-config"
+    },
+    "WASERROR": {
+      "depends_on": [],
+      "description": "Web service error handler for CST SOAP application responses with HTTP status parsing",
+      "type": "simulation-script"
     },
     "WSAAC01": {
       "depends_on": [
@@ -537,6 +911,30 @@
       ],
       "description": "Policy VSAM integration web services",
       "type": "jcl"
+    },
+    "WSC1A1": {
+      "depends_on": [
+        "#SSVARS.TXT",
+        "SSC1A2",
+        "WASERROR"
+      ],
+      "description": "SOAP customer add simulation script - generates SOAP envelope and HTTP request for LGACUS01 web service testing using synthetic customer data",
+      "type": "web-service-simulation"
+    },
+    "WSC1I1": {
+      "depends_on": [
+        "#SSVARS.TXT",
+        "WASERROR"
+      ],
+      "description": "SOAP customer inquiry simulation script - generates SOAP envelope and HTTP request for LGICUS01 web service testing with random customer number generation",
+      "type": "web-service-simulation"
+    },
+    "WSLGCF": {
+      "depends_on": [
+        "LGICVS01"
+      ],
+      "description": "Customer validation web service simulation - fetches valid customer numbers via LGICVS01 service with error handling and response parsing",
+      "type": "web-service-simulation"
     },
     "install.sh": {
       "depends_on": [],

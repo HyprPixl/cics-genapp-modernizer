@@ -268,6 +268,326 @@
 - Dataset Configuration: automatically determines optimal allocation parameters (LRECL, BLKSIZE, SPACE) for each component type.
 - Dependencies: USS environment with `tsocmd` utility, appropriate TSO/ISPF authority for dataset allocation, connectivity to target z/OS system.
 
+## Phase 5 – Data & Simulation Assets
+
+### Sample Test Data Documentation
+
+#### KSDSCUST.TXT – Customer Test Dataset
+- **Purpose**: Sample customer records for testing VSAM KSDS operations via programs like `LGACVS01`, `LGUCVS01`, and `LGICVS01`.
+- **Format**: Fixed-length records, 225 bytes per record (consistent with `CUSTOMER-RECORD-SIZE` in COBOL).
+- **Record Count**: 10 test customer records (customers 0000000001 through 0000000010, complete sequence; file missing final newline).
+- **Key Structure**: 10-byte customer number (positions 1-10), zero-padded.
+- **Field Layout** (based on `LGCMAREA` copybook structure):
+  - Customer Number: positions 1-10 (PIC 9(10))
+  - First Name: positions 11-20 (PIC X(10))
+  - Last Name: positions 21-40 (PIC X(20))
+  - Date of Birth: positions 41-50 (PIC X(10), format YYYY-MM-DD)
+  - House Name: positions 51-70 (PIC X(20))
+  - House Number: positions 71-74 (PIC X(4))
+  - Postcode: positions 75-82 (PIC X(8))
+  - Number of Policies: positions 83-85 (PIC 9(3))
+  - Mobile Phone: positions 86-105 (PIC X(20))
+  - Home Phone: positions 106-125 (PIC X(20))
+  - Email Address: positions 126-225 (PIC X(100))
+- **Dependencies**: Corresponds to `CA-CUSTOMER-REQUEST` structure in `LGCMAREA` copybook; used by customer VSAM programs.
+- **Test Coverage**: Includes varied customer profiles (ages from 1934-1969 births), diverse address formats (postcodes like "PI101O", "TB14TV"), mixed phone number combinations, and email addresses from different domains.
+
+#### KSDSPOLY.TXT – Policy Test Dataset
+- **Purpose**: Sample policy records for testing VSAM KSDS operations via programs like `LGAPVS01`, `LGUPVS01`, `LGDPVS01`, and `LGIPVS01`.
+- **Format**: Fixed-length records, 64 bytes per record (consistent with policy VSAM file definitions).
+- **Record Count**: 10 test policy records covering all four policy types.
+- **Key Structure**: 21-byte composite key (positions 1-21):
+  - Policy Type ID: position 1 (C/E/H/M for Commercial/Endowment/House/Motor)
+  - Customer Number: positions 2-11 (PIC 9(10), zero-padded)
+  - Policy Number: positions 12-21 (PIC 9(10), zero-padded)
+- **Policy Type Distribution**:
+  - **Commercial** (C): 2 policies (customers 1, 5)
+  - **Endowment** (E): 2 policies (customers 3, 8)
+  - **House** (H): 3 policies (customers 4, 6, 9)
+  - **Motor** (M): 3 policies (customers 2, 5, 10)
+- **Field Layout Examples** (positions 22-64, type-specific):
+  - **Commercial** (C): Examples include "IBM" and "Clarets Merchandise" business names with postcodes and status indicators
+  - **Endowment** (E): Life assured names like "Shep" and "J. MORRIS" with fund management flags (Y/N indicators for profits, equities)
+  - **House** (H): Property types (HOUSE/FARM/FLAT), bedroom counts (5/0/1), values (£150K-£375K), postcodes (SO211UP, SO529ED, E15WW)
+  - **Motor** (M): Vehicle makes (FORD/DENNIS/VOLKSWAGEN), models (KA/ENGINE/BEETLE), values (£600-£85K), registrations (LL60LOO, FIRE1, A567WWR)
+- **Dependencies**: Corresponds to `WF-Policy-Info` structure in VSAM programs; matches policy-specific sections in `LGCMAREA`.
+- **Test Coverage**: Provides comprehensive examples of each policy type with realistic UK-specific data (postcodes, registration numbers, property values).
+
+### Workload Simulation Configuration
+
+#### GENAPP.TXT – Main Workload Simulator Configuration
+- Purpose: primary configuration file for IBM Workload Simulator for z/OS (WSim) defining network parameters, transaction paths, and simulation execution profiles.
+- Network Configuration:
+  - `BUFSIZE=1920`: Terminal buffer size for 3270 data streams
+  - `Conrate=No`: Disables connection rate limiting 
+  - `DELAY=F1`: Uses F1 delay timing for transaction pacing
+  - `LUTYPE=LU2`: Configures for LU Type 2 (3270 terminal) sessions
+  - `UTI=100`: Sets utilization target to 100% for maximum throughput
+  - `MLOG=YES, MLEN=1000`: Enables message logging with 1000-character limit
+  - `OPTIONS=(DEBUG)`: Activates debug mode for detailed execution tracing
+- Transaction Paths:
+  - `ADDTRANS`: Add-only transaction mix (`SSC1A1`, `SSP1A1`, `SSP2A1`, `SSP3A1`, `SSP4A1`) with 5:1:1:1:1 distribution
+  - `ALLTRANS`: Full CRUD transaction mix including inquire, update, and delete operations across all policy types
+  - `WEB1`: Web service transaction path (`WSC1I1`, `WSC1A1`) for HTTP-based scenarios
+- Terminal Configuration:
+  - `GNWS001 VTAMAPPL`: VTAM application identifier for SNA session management
+  - `LUSS001 LU`: Logical unit definition with `FRSTTXT=#ONCICS` for CICS connection initialization
+  - TCP/IP configuration (commented): Ready for web service simulation via TCP port 4321
+- Dependencies: references simulation script files (`SSC1*`, `SSP1*`, `SSP2*`, `SSP3*`, `SSP4*`, `WSC1*`), `#ONCICS` initialization script, and VTAM/CICS connectivity infrastructure.
+
+#### #SSVARS.TXT – Shared Variables and Constants Definition
+- Purpose: WSim shared variable definition file providing global constants, counters, and data conversion tables used across all simulation scripts.
+- Variable Categories:
+  - Runtime Control: `STRT_Debugit`, `STRT_WAS_Route`, `STRT_LU2_Terms`, `STRT_WAS_Terms`, `STRT_Stats_Out` for execution flow control
+  - Transaction Counters: Shared integer counters (`Count_lu2_*`, `Count_was_*`) tracking successful transactions per script type (SSC1, SSP1-4 variants)
+  - Error Counters: Error tracking counters (`ECount_lu2_*`, `ECount_was_*`) for failed transaction monitoring and reporting
+  - Working Variables: Unshared integers (`I1-I5`, `CUST_NUM`, `POL_NUM`, `TRAN_ID`) for temporary calculations and data generation
+  - String Variables: Unshared string variables (`S1-S5`, `VS1-VS10`) for dynamic data formatting and screen interaction
+- Data Conversion Tables:
+  - `E2A`: EBCDIC-to-ASCII conversion table (256-byte hexadecimal constant) for mainframe-to-workstation character translation
+  - `A2E`: ASCII-to-EBCDIC conversion table for reverse character translation
+- Bit Flags: Control flags (`Found`, `Tran_Error`, `FEmail`) for conditional logic and state management across simulation scenarios
+- Dependencies: included by all simulation scripts via `@Include #SSVARS` directive; supports both LU2 (3270 terminal) and WAS (web service) simulation modes.
+
+### Workstation Simulator Transaction Scripts
+#### Customer Transaction Scripts (SSC1*)
+##### SSC1A1 - Customer Add Simulation
+- Purpose: simulates creation of new customer records through the 3270 interface using transaction `SSC1`.
+- Flow: navigates to customer add screen, generates random customer data (names from UTBL tables, birth dates, addresses), submits via PF2, validates success message "New Customer Inserted".
+- Data Generation: uses UTBL reference tables (`Fname`, `Sname`, `Pcode`) for realistic test data; generates birth dates between 1940-1980, random addresses and postal codes.
+- Error Handling: increments `eCount_lu2_SSC1A1` counter on failure, includes optional email notification when transaction count exceeds `STRT_Stats_Out` threshold.
+- Dependencies: `#SSVARS` for shared simulation variables, UTBL reference data tables, transaction `SSC1` (maps to `LGACUS01` COBOL program).
+
+##### SSC1I1 - Customer Inquiry Simulation  
+- Purpose: simulates customer information retrieval through transaction `SSC1` inquiry function (option 1).
+- Flow: first executes `LGCF` to establish customer context, extracts customer number from screen, then performs inquiry via `SSC1` transaction.
+- Interface: positions cursor at row 22, column 25 and types '1' to select inquiry option, validates screen response.
+- Error Handling: includes counter `Count_lu2_SSC1I1` for performance tracking, debug logging when `STRT_Debugit = 'ON'`.
+- Dependencies: requires active customer session context from `LGCF`, transaction `SSC1` (maps to `LGICUS01` COBOL program).
+
+#### Motor Policy Transaction Scripts (SSP1*)
+##### SSP1A1 - Motor Policy Add Simulation
+- Purpose: simulates motor insurance policy creation through transaction `SSP1` add function.
+- Flow: establishes customer context via `LGCF`, extracts customer number, generates comprehensive motor policy data including vehicle details, dates, and premiums.
+- Data Generation: creates start/expiry dates (1997-2007), vehicle make/model from UTBL tables (`Cmake`, `Cmodel`), registration numbers, colors (`Ccolor`), values (13000-38000), and manufactured dates (1975-2007).
+- Validation: expects success message "New Motor Policy Inserted", logs failure via `eCount_lu2_SSP1A1` counter.
+- Dependencies: customer context from `LGCF`, UTBL reference tables for vehicle data, transaction `SSP1` (maps to `LGAPOL01` COBOL program).
+
+##### SSP1I1 - Motor Policy Inquiry Simulation
+- Purpose: simulates motor policy information retrieval using policy finder and inquiry functions.
+- Flow: uses `LGPF M` command to locate motor policies for customer, extracts policy details from screen, then performs detailed inquiry via `SSP1`.
+- Data Extraction: parses screen for policy key format, validates policy type 'M' (Motor), extracts policy and customer numbers for inquiry.
+- Error Handling: includes conditional logic to skip inquiry if no motor policy found, tracks performance via `Count_lu2_SSP1I1`.
+- Dependencies: `LGPF` policy finder utility, transaction `SSP1` (maps to `LGIPOL01` COBOL program).
+
+##### SSP1U1 - Motor Policy Update Simulation
+- Purpose: simulates modification of existing motor policy details through transaction `SSP1` update function (option 4).
+- Flow: locates existing motor policy via `LGPF M`, validates "No data" condition, generates updated policy information, submits changes.
+- Data Updates: modifies policy dates, vehicle make/model, value, registration, color, premium amounts using randomized data within realistic ranges.
+- Validation: expects "Motor Policy Updated" success message, handles update failures via `eCount_lu2_SSP1U1` error counter.
+- Dependencies: existing motor policy records, UTBL reference tables, transaction `SSP1` (maps to `LGUPOL01` COBOL program).
+
+##### SSP1D1 - Motor Policy Delete Simulation  
+- Purpose: simulates deletion of motor insurance policies through transaction `SSP1` delete function (option 3).
+- Flow: uses policy finder to locate motor policy, extracts policy identifiers, performs deletion via option 3.
+- Validation: expects "Motor Policy Deleted" confirmation message, logs deletion failures via `eCount_lu2_SSP1D1`.
+- Dependencies: existing policy records, `LGPF` policy finder, transaction `SSP1` (maps to `LGDPOL01` COBOL program).
+
+#### Endowment/Life Policy Transaction Scripts (SSP2*)
+##### SSP2A1 - Endowment Policy Add Simulation
+- Purpose: simulates life insurance policy creation through transaction `SSP2` add function.
+- Flow: establishes customer context, generates endowment policy data including beneficiary information, coverage amounts, and policy terms.
+- Data Generation: creates policy dates (1997-2007), coverage amounts (10000-999000), beneficiary names from UTBL tables, random Y/N flags for policy options.
+- Validation: expects "New Life Policy Inserted" success message, tracks failures via `eCount_lu2_SSP2A1`.
+- Dependencies: customer context, UTBL name tables (`Fname`, `Sname`), transaction `SSP2` (maps to `LGAPOL01` COBOL program).
+
+##### SSP2U1 - Endowment Policy Update Simulation
+- Purpose: simulates updates to existing endowment policy details.
+- Flow: locates endowment policy via `LGPF E`, generates updated beneficiary and coverage information, submits via update option.
+- Data Updates: modifies beneficiary names, coverage amounts, policy flags (withholding tax, medical details, etc.) using random data.
+- Dependencies: existing endowment policies, transaction `SSP2` (maps to `LGUPOL01` COBOL program).
+
+##### SSP2I1 - Endowment Policy Inquiry Simulation
+- Purpose: retrieves endowment policy details through inquiry function.
+- Dependencies: `LGPF` policy finder, transaction `SSP2` (maps to `LGIPOL01` COBOL program).
+
+##### SSP2D1 - Endowment Policy Delete Simulation
+- Purpose: deletes endowment policies through delete function.
+- Dependencies: existing policy records, transaction `SSP2` (maps to `LGDPOL01` COBOL program).
+
+#### House Policy Transaction Scripts (SSP3*)
+##### SSP3A1 - House Policy Add Simulation
+- Purpose: simulates house insurance policy creation through transaction `SSP3`.
+- Flow: establishes customer context, generates house policy data including property details, coverage types, and premiums.
+- Data Generation: creates policy dates, house types from UTBL (`Htype`), property values (100000-999000), address information, postal codes from UTBL (`Pcode`).
+- Validation: expects "New House Policy Inserted" confirmation message.
+- Dependencies: customer context, UTBL reference tables for house data, transaction `SSP3` (maps to `LGAPOL01` COBOL program).
+
+##### SSP3U1 - House Policy Update Simulation  
+- Purpose: simulates updates to existing house policy details.
+- Flow: locates house policy via `LGPF H`, generates updated property and coverage information.
+- Dependencies: existing house policies, transaction `SSP3` (maps to `LGUPOL01` COBOL program).  
+
+##### SSP3I1 - House Policy Inquiry Simulation
+- Purpose: retrieves house policy information through inquiry function.
+- Dependencies: `LGPF` policy finder, transaction `SSP3` (maps to `LGIPOL01` COBOL program).
+
+##### SSP3D1 - House Policy Delete Simulation
+- Purpose: deletes house insurance policies.
+- Validation: expects "House Policy Deleted" confirmation message.
+- Dependencies: existing policy records, transaction `SSP3` (maps to `LGDPOL01` COBOL program).
+
+#### Commercial Policy Transaction Scripts (SSP4*)  
+##### SSP4A1 - Commercial Policy Add Simulation
+- Purpose: simulates commercial property insurance policy creation through transaction `SSP4`.
+- Flow: generates comprehensive commercial property data including location coordinates, peril coverages, and premium calculations.
+- Data Generation: creates property addresses, postal codes, latitude/longitude coordinates, customer names, property types from UTBL (`Ptype`), and detailed peril coverages (Fire, Crime, Flood, Weather) with corresponding premiums.
+- Validation: expects "New Commercial Policy Inserted" success message.
+- Dependencies: extensive UTBL reference tables, transaction `SSP4` (maps to `LGAPOL01` COBOL program).
+
+##### SSP4I1 - Commercial Policy Inquiry Simulation
+- Purpose: retrieves commercial policy details through inquiry function.
+- Dependencies: `LGPF` policy finder, transaction `SSP4` (maps to `LGIPOL01` COBOL program).
+
+##### SSP4D1 - Commercial Policy Delete Simulation  
+- Purpose: deletes commercial property policies.
+- Validation: expects "Commercial Policy Deleted" confirmation message.
+- Dependencies: existing policy records, transaction `SSP4` (maps to `LGDPOL01` COBOL program).
+
+#### Data Generation Modules (A2 Scripts)
+- **SSC1A2**: customer data generation module providing variables (VS1-VS6) for names, birth dates, addresses, and postal codes used by customer add simulations.
+- **SSP1A2**: motor policy data generation module providing variables (VS1-VS10) for customer numbers, policy dates, vehicle details (make/model/color), values, and registration information.
+- **SSP2A2**: endowment policy data generation module providing variables for beneficiary names, coverage amounts, policy terms, and flags.
+- **SSP3A2**: house policy data generation module providing variables for property details, house types, values, and location information.
+
+#### Simulation Script Architecture
+- **Variable Sharing**: all scripts include `#SSVARS` for shared simulation state, counters, and configuration.
+- **Data Generation**: extensive use of UTBL reference tables for realistic test data (names, codes, types) and A2 modules for structured variable sets.
+- **Error Tracking**: consistent error counter naming (`eCount_lu2_*`) and optional email notification system.
+- **Debug Support**: conditional debug logging when `STRT_Debugit = 'ON'`, performance statistics when `STRT_Debugit = 'TEST'`.
+- **Screen Automation**: 3270 terminal automation using cursor positioning, field typing, function key transmission, and screen validation.
+- **Transaction Integration**: each script maps to corresponding CICS transactions and COBOL programs in the GenApp system.
+- **Modular Design**: A1 scripts handle transaction flow and screen interaction, A2 modules provide reusable data generation logic.
+
+### Web Service Simulation Scripts
+
+#### WSC1A1 – SOAP Customer Add Simulation
+- Purpose: web service test script for customer creation functionality through SOAP interface to `LGACUS01`.
+- Structure: generates complete SOAP envelope with customer data payload and HTTP headers for web service invocation.
+- Dependencies: includes `#SSVARS` for shared variables, `SSC1A2` for additional customer data, `WASerror` for error handling routines.
+- Data Sources: uses simulation variables (`VS1`, `VS2`, etc.) for synthetic customer names, addresses, and personal details.
+- Request Format: constructs `LGACUS01Operation` SOAP message with `01ACUS` request ID and customer demographic fields.
+- Notes: targets endpoint `/GENAPP/LGACUS01` with proper SOAP action headers; handles EBCDIC/ASCII translation for mainframe integration.
+
+#### WSC1I1 – SOAP Customer Inquiry Simulation  
+- Purpose: web service test script for customer information retrieval through SOAP interface to `LGICUS01`.
+- Structure: generates SOAP envelope with inquiry request and random customer number generation for testing.
+- Dependencies: includes `#SSVARS` for shared variables, `WASerror` for error handling routines.
+- Data Sources: uses `Random(1,10)` function to generate test customer numbers for inquiry operations.
+- Request Format: constructs `LGICUS01Operation` SOAP message with `01ICUS` request ID and empty response fields for population.
+- Notes: targets endpoint `/GENAPP/LGICUS01`; designed to validate inquiry response structure and data retrieval accuracy.
+
+#### WSLGCF – Customer Validation Web Service  
+- Purpose: specialized simulation script for fetching valid customer numbers through `LGICVS01` service interface.
+- Structure: builds SOAP request to customer validation service with error detection and response parsing logic.
+- Dependencies: relies on `LGICVS01` web service operation for customer number validation and retrieval.
+- Error Handling: includes validation logic checking for `<Comma_Data_High>` response elements; signals `StopNow` on validation failures.
+- Response Processing: extracts customer number from SOAP response using substring operations and EBCDIC-to-decimal conversion.
+- Notes: targets endpoint `/GENAPP/LGICVS01`; includes abort conditions for policy errors and stop signals; provides valid customer numbers for dependent simulation flows.
+
+### Reference Data and Lookup Tables
+
+#### CCOLOR – Car Color Lookup Table
+- Purpose: MSGUTBL lookup table providing standard vehicle color options for motor insurance policy simulation.
+- Contents: includes 26 color values such as Blue, Purple, Beige, Grey, Orange, Cream, Green, Violet, Indigo, Bronze, Platinum, Azure, Charcoal, Claret, Burgundy, Aqua, Sunburst, Red, White, Silver, Black, Pink, Yellow, Turquoise, Gold, Brown.
+- Usage: referenced by simulation scripts and policy creation workflows requiring vehicle color selection.
+- Format: standard MSGUTBL structure with descriptive color names suitable for user interface presentation.
+
+#### CMAKE – Car Make Lookup Table  
+- Purpose: MSGUTBL lookup table providing standard vehicle manufacturer options for motor insurance policy simulation.
+- Contents: includes 21 manufacturer names such as Ford, Mazda, Honda, Cadillac, Ferrari, Hyundai, Peugeot, Renault, Citroen, Land Rover, Mini, Volkswagen, GMC, Vauxhall, Porsche, BMW, Mercedes, Oldsmobile, Toyota, Lada, Skoda.
+- Usage: referenced by simulation scripts and policy creation workflows requiring vehicle manufacturer selection.
+- Format: standard MSGUTBL structure with manufacturer brand names.
+
+#### CMODEL – Car Model Lookup Table
+- Purpose: MSGUTBL lookup table providing standard vehicle model options for motor insurance policy simulation.
+- Contents: includes 23 model names such as 205, Twinkle, 911, Riva, Omega, Fiesta, Discovery, Capri, Cortina, Uno, Astra, CRV, Golf, Polo, Z5, Firebird, Thunderbird, Cavalier, 6, Corsa, Boxster, Smallbit, Backseater.
+- Usage: referenced by simulation scripts and policy creation workflows requiring vehicle model selection.
+- Format: standard MSGUTBL structure with model names ranging from numeric designations to descriptive names.
+
+#### CTYPE – Coverage Type Lookup Table
+- Purpose: MSGUTBL lookup table providing standard insurance coverage and risk types for policy simulation.
+- Contents: includes 13 coverage types such as Theft, Fire, Accident, Water Damage, Subsidence, Injury, Wind Damage, Vandalism, Weather Damage, Crash, Ice Damage, Death, Serious Illness.
+- Usage: referenced by simulation scripts and policy creation workflows requiring coverage type selection across multiple insurance product lines.
+- Format: standard MSGUTBL structure with descriptive coverage names suitable for policy documentation.
+
+#### FNAME – First Names Lookup Table
+- Purpose: MSGUTBL lookup table providing standard first names for customer data simulation and testing.
+- Contents: extensive list of common first names including Adrian, John, Robert, Michael, William, David, Richard, Charles, Joseph, Thomas, Christopher, Daniel, Paul, Mark, Donald, George, Kenneth, Steven, Edward, Brian, Ronald, Anthony, Kevin, Jason, Matthew, Gary, Timothy, and many others.
+- Usage: referenced by customer creation and simulation workflows requiring realistic personal name data.
+- Format: standard MSGUTBL structure with names formatted for consistent 10-character field width.
+
+#### HTYPE – House Type Lookup Table
+- Purpose: MSGUTBL lookup table providing standard residential property types for house insurance policy simulation.
+- Contents: includes 17 property types such as Detached, Semi, Bungalow, Flat, Apartment, Farm, B and B, Hotel, Castle, Prison, Garage, Terraced, Mansion, Skip, Condo, Palace, Bedsit.
+- Usage: referenced by simulation scripts and house policy creation workflows requiring property type classification.
+- Format: standard MSGUTBL structure with property type descriptions.
+
+#### PCODE – Postal Code Lookup Table
+- Purpose: MSGUTBL lookup table providing standard UK postal codes for address simulation and geographic testing.
+- Contents: extensive list of UK postal codes starting with prefixes like AB (Aberdeen area), including codes such as AB239AB, AB239AF, AB259AB, AB309AA, and hundreds of others covering multiple geographic regions.
+- Usage: referenced by customer and property address generation workflows requiring realistic UK postal code data.
+- Format: standard MSGUTBL structure with properly formatted UK postal code patterns.
+
+#### PTYPE – Property Type Lookup Table  
+- Purpose: MSGUTBL lookup table providing standard commercial property types for business insurance policy simulation.
+- Contents: includes 17 property types such as Office, Shop, Retail, Warehouse, Wholesale, Chemist, Park, B & B, Hotel, Prison, Garage, Station, Supermarket, Shopping Mall, Stadium, School, Hospital.
+- Usage: referenced by simulation scripts and commercial policy creation workflows requiring business property classification.
+- Format: standard MSGUTBL structure with commercial property descriptions.
+
+#### RTYPE – Road Type Lookup Table
+- Purpose: MSGUTBL lookup table providing standard street type abbreviations for address formatting in simulation.
+- Contents: includes 8 road type entries with both full and abbreviated forms: Road/RD, Street/ST, Avenue/AVE, Close/CL.
+- Usage: referenced by address generation workflows requiring proper street type formatting for UK addressing standards.
+- Format: standard MSGUTBL structure with both full names and common abbreviations.
+
+#### SNAME – Surname Lookup Table
+- Purpose: MSGUTBL lookup table providing standard surnames for customer data simulation and testing.
+- Contents: extensive list of common British surnames including Smith, Jones, Taylor, Williams, Brown, Davies, Evans, Wilson, Thomas, Roberts, Johnson, Lewis, Walker, Robinson, Wood, Thompson, White, Watson, Jackson, Wright, Green, Harris, Cooper, King, Lee, Martin, Clarke, and many others.
+- Usage: referenced by customer creation and simulation workflows requiring realistic surname data for demographic testing.
+- Format: standard MSGUTBL structure with surnames formatted for consistent 10-character field width.
+
+### Simulation Control & Error Handling Assets
+#### ONCICS.TXT – CICS Connection Manager  
+- Purpose: automated CICS terminal connection recovery and initialization for workload simulation sessions.
+- Interfaces: includes `#SSVARS.TXT` for shared variable definitions; monitors screen content for CICS availability indicator `DFHCE3547`.
+- Dependencies: workload simulator runtime, `<TORAPPL>` application context, shared `Found` variable from `#SSVARS`.
+- Flow Control: uses `onin0001` event handler to detect CICS readiness; suspends terminal for 5-second intervals until connection established; deactivates handler and transmits clear screen once connected.
+- Notes: essential bootstrap logic ensuring simulation terminals establish valid CICS session before executing transaction flows; referenced via `C#ONCICS` path in `GENAPP.TXT`.
+
+#### STOP.TXT – Simulation Termination Handler
+- Purpose: graceful workload simulator termination with terminal cleanup and resource quiescing.
+- Interfaces: includes `#SSVARS.TXT` for environment variables; implements `STOP` message text block for simulator path definitions.
+- Dependencies: workload simulator runtime, shared variable context from `#SSVARS`.
+- Flow Control: outputs termination message and invokes `Quiesce` command to properly release terminal resources and end simulation session.
+- Notes: referenced as `Stop` path in `GENAPP.TXT`; called from transaction scripts (e.g., `SSC1A1.TXT`) to cleanly exit simulation flows.
+
+#### WASERROR.TXT – Web Service Error Handler
+- Purpose: specialized error processing for CST SOAP application responses with HTTP status code parsing and application-level error extraction.
+- Interfaces: processes web service response data in variable `S5`; outputs diagnostic messages via `MSGTXTID()` function.
+- Dependencies: workload simulator string functions (`E2D`, `Substr`, `Pos`, `Char`), web service response parsing context.
+- Error Processing Logic: extracts HTTP status code from position 10-12 of response; handles HTTP 200 responses by parsing embedded `<ca_return_code>` XML elements; reports both HTTP-level and application-level error codes with descriptive messages.
+- Notes: included via `@Include WASerror` in web service simulation scripts; provides standardized error reporting for SOAP-based transaction testing.
+
+### CICS Event Processing & Monitoring Configuration
+#### Transaction_Counters.evbind – Business Transaction Event Binding
+- Purpose: CICS Event Processing configuration that captures business transaction metrics and dispatches events to statistics collection program `LGASTAT1`.
+- Event Specification: defines `Count_business_trans` event with `Request_Type` (6-byte text) and `Return_code` (2-byte numeric) data fields.
+- Capture Configuration: monitors CICS LINK PROGRAM commands targeting programs with names starting with `LG`; captures commarea data at offsets 0-5 (request type) and 6-7 (return code).
+- Event Dispatcher: routes captured events to transaction `LGST` which invokes `LGASTAT1` program; uses CCE format for event data exchange; operates with normal priority and non-transactional event processing.
+- Integration Points: supports real-time monitoring of GenApp transaction flows (customer/policy operations); provides data feed for statistics dashboard via `LGWEBST5` program and shared TSQ structures.
+- Notes: critical monitoring infrastructure enabling transaction throughput measurement and application health tracking; coordinates with named counters (`GENA*` series) for comprehensive workload visibility.
+
 ## Immediate Findings & Questions
 - `install.sh` expects `tsocmd` and USS `cp` with dataset support; confirm environment prerequisites.
 - Customer experience assets hint at established monitoring and test flows; identify current owners.
