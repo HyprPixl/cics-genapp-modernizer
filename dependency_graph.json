@@ -5,6 +5,11 @@
       "description": "Commercial policy extension",
       "type": "db2-table"
     },
+    "DB2.CUSTOMER": {
+      "depends_on": [],
+      "description": "Customer master records table",
+      "type": "db2-table"
+    },
     "DB2.ENDOWMENT": {
       "depends_on": [],
       "description": "Endowment policy details",
@@ -101,9 +106,14 @@
       "type": "copybook"
     },
     "LGDPDB01": {
-      "depends_on": [],
-      "description": null,
-      "type": null
+      "depends_on": [
+        "DB2.POLICY",
+        "LGCMAREA",
+        "LGDPVS01",
+        "LGSTSQ"
+      ],
+      "description": "Delete policy DB2 backend service - removes policy records from POLICY table and invokes VSAM cleanup",
+      "type": "cobol"
     },
     "LGDPOL01": {
       "depends_on": [
@@ -114,10 +124,20 @@
       "description": "Delete policy front-end program",
       "type": "cobol"
     },
-    "LGICDB01": {
+    "LGDPVS01": {
       "depends_on": [],
       "description": null,
       "type": null
+    },
+    "LGICDB01": {
+      "depends_on": [
+        "DB2.CUSTOMER",
+        "LGCMAREA",
+        "LGPOLICY",
+        "LGSTSQ"
+      ],
+      "description": "Inquire customer DB2 backend service - retrieves customer details from CUSTOMER table with single-row SELECT",
+      "type": "cobol"
     },
     "LGICUS01": {
       "depends_on": [
@@ -129,9 +149,18 @@
       "type": "cobol"
     },
     "LGIPDB01": {
-      "depends_on": [],
-      "description": null,
-      "type": null
+      "depends_on": [
+        "DB2.COMMERCIAL",
+        "DB2.ENDOWMENT",
+        "DB2.HOUSE",
+        "DB2.MOTOR",
+        "DB2.POLICY",
+        "LGCMAREA",
+        "LGPOLICY",
+        "LGSTSQ"
+      ],
+      "description": "Comprehensive policy inquiry DB2 service - handles multiple policy types (Endowment, House, Motor, Commercial) with complex cursor-based queries",
+      "type": "cobol"
     },
     "LGIPOL01": {
       "depends_on": [
@@ -149,13 +178,19 @@
     },
     "LGSTSQ": {
       "depends_on": [],
-      "description": "TDQ logger for diagnostics",
+      "description": "Shared TDQ/TSQ logging service - writes diagnostic messages to both transient data queue (CSMT) and temporary storage queue (GENAnnnn)",
       "type": "cobol"
     },
     "LGUCDB01": {
-      "depends_on": [],
-      "description": null,
-      "type": null
+      "depends_on": [
+        "DB2.CUSTOMER",
+        "LGCMAREA",
+        "LGPOLICY",
+        "LGSTSQ",
+        "LGUCVS01"
+      ],
+      "description": "Update Customer DB2 backend service - modifies customer records in CUSTOMER table and coordinates VSAM sync via LGUCVS01",
+      "type": "cobol"
     },
     "LGUCUS01": {
       "depends_on": [
@@ -166,10 +201,24 @@
       "description": "Update customer front-end program",
       "type": "cobol"
     },
-    "LGUPDB01": {
+    "LGUCVS01": {
       "depends_on": [],
       "description": null,
       "type": null
+    },
+    "LGUPDB01": {
+      "depends_on": [
+        "DB2.ENDOWMENT",
+        "DB2.HOUSE",
+        "DB2.MOTOR",
+        "DB2.POLICY",
+        "LGCMAREA",
+        "LGPOLICY",
+        "LGSTSQ",
+        "LGUPVS01"
+      ],
+      "description": "Update policy DB2 backend service - modifies policy records across multiple tables (Endowment, House, Motor) and coordinates VSAM sync via LGUPVS01",
+      "type": "cobol"
     },
     "LGUPOL01": {
       "depends_on": [
@@ -179,6 +228,11 @@
       ],
       "description": "Update policy front-end program",
       "type": "cobol"
+    },
+    "LGUPVS01": {
+      "depends_on": [],
+      "description": null,
+      "type": null
     }
   }
 }
