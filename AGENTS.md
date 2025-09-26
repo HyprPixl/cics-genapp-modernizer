@@ -12,6 +12,11 @@
   - Policy database services: `LGDPDB01` (delete), `LGIPDB01` (inquire), `LGUPDB01` (update) with corresponding VSAM sync services
   - Customer database services: `LGICDB01` (inquire), `LGUCDB01` (update), `LGACDB02` (security) with VSAM coordination
   - All database services follow consistent patterns: DB2 operations, VSAM synchronization, comprehensive error handling via `LGSTSQ`
+- **PHASE 3 TASK 4 COMPLETE:** Documented SOA data copybooks for web service integration:
+  - `SOAVCII`/`SOAVCIO`: Customer inquiry web service input/output commareas for LGICVS01 VSAM lookups
+  - `SOAVPII`/`SOAVPIO`: Policy validation web service input/output commareas for LGIPVS01 policy validation
+  - All SOA copybooks support CICS Language Structure to WSDL (LS2WS) conversion for web service endpoints
+  - Integration with CICS web service infrastructure and JCL automation (wsavc01.jcl, wsavp01.jcl)
 
 ## Dependency Notes
 - `LGAPOL01` depends on `LGAPDB01` (database insert logic), `LGSTSQ` (TDQ logging helper), and the `LGCMAREA` copybook.
@@ -23,6 +28,7 @@
 - **Phase 2 Database Service Dependencies:** All database backend services (`*DB01`) depend on DB2 tables, corresponding VSAM sync services (`*VS01`), shared copybooks (`LGCMAREA`, `LGPOLICY`), and error logging (`LGSTSQ`).
 - **Database-VSAM Synchronization Pattern:** Policy services sync to `KSDSPOLY`, customer services sync to `KSDSCUST`; all VSAM services depend on `LGCMAREA` and `LGSTSQ`.
 - **Customer Security Integration:** `LGACDB01` coordinates with `LGACDB02` for secure credential management in `CUSTOMER_SECURE` table.
+- **SOA Web Service Integration:** `LGICVS01` uses `SOAVCII`/`SOAVCIO` for customer inquiries, `LGIPVS01` uses `SOAVPII`/`SOAVPIO` for policy validation; all support CICS LS2WS conversion for web service endpoints via JCL automation (`wsavc01.jcl`, `wsavp01.jcl`).
 
 ## Tooling
 - Dependency graph helper lives at `tools/dep_graph.py`; default store is `dependency_graph.json`.
