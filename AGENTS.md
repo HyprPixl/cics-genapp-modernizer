@@ -28,9 +28,28 @@
 ## Work Sequencing
 - **Phase 1 – Core Transactions (serial):** Continue through customer and policy front-end programs (`LGAPOL01`, `LGAPVS01`, `LGACUS01`, etc.), pairing each with its backing DB module so request/response flows stay consistent.
 - **Phase 2 – Data Services (serial):** Document batch/database utilities (`LGAPDB01`, `LGDPDB01`, `LGIPDB01`, `LGUCDB01`) and shared logging (`LGSTSQ`) once their callers are understood.
-- **Phase 3 – Shared Assets (parallel):** Tackle copybooks (`LGCMAREA`, `POLLOOK`, `POLLOO2`, `SOA*`) and BMS maps (`SSMAP.bms`) alongside transaction work; these can be owned by a separate teammate with ongoing updates.
-- **Phase 4 – Ops & Automation (parallel):** While COBOL review continues, another stream can inventory JCL in `base/cntl/`, REXX execs, and `install.sh`, cross-linking jobs to program compile/deploy steps.
-- **Phase 5 – Data & Simulation (parallel):** In parallel with ops review, analyze `base/data/` datasets and `base/wsim/` scripts, documenting how they support test scenarios and customer journeys.
+- **Phase 3 – Shared Assets (parallel):** Tackle copybooks and BMS maps alongside transaction work; these can be owned by separate teammates with ongoing updates.
+  - **Phase 3 Task 1:** Document core copybooks (`LGCMAREA`, `LGPOLICY`) - shared data structures
+  - **Phase 3 Task 2:** Document lookup copybooks (`POLLOOK`, `POLLOO2`) - reference data structures  
+  - **Phase 3 Task 3:** Document SOA interface copybooks (`SOAIC01`, `SOAIPB1`, `SOAIPE1`, `SOAIPH1`, `SOAIPM1`) - service interfaces
+  - **Phase 3 Task 4:** Document SOA data copybooks (`SOAVCII`, `SOAVCIO`, `SOAVPII`, `SOAVPIO`) - service data exchange
+  - **Phase 3 Task 5:** Document BMS maps (`SSMAP.bms`) - screen layouts and field definitions
+- **Phase 4 – Ops & Automation (parallel):** While COBOL review continues, inventory operational artifacts and cross-link to program dependencies.
+  - **Phase 4 Task 1:** Document CICS definition JCL (`ADEF121`, `CDEF121-125`) - transaction and program definitions
+  - **Phase 4 Task 2:** Document compilation JCL (`COBOL`, `ASMMAP`, `DB2BIND`) - build and deployment jobs
+  - **Phase 4 Task 3:** Document database setup JCL (`DB2CRE`, `DB2DEL`, `DEFDREP`, `DEFWREP`) - data management jobs
+  - **Phase 4 Task 4:** Document workload simulation JCL (`ITPENTR`, `ITPLL`, `ITPSTL`, `SAMPCMA`, `SAMPNCS`, `SAMPTSQ`, `SAMPWUI`) - testing infrastructure
+  - **Phase 4 Task 5:** Document web service JCL (`WSA*` series) - service automation jobs
+  - **Phase 4 Task 6:** Document REXX automation (`CUST1.REXX`, `MAC1.REXX`) - operational scripts
+  - **Phase 4 Task 7:** Document installation automation (`install.sh`) - deployment and setup processes
+- **Phase 5 – Data & Simulation (parallel):** In parallel with ops review, analyze test data and simulation assets.
+  - **Phase 5 Task 1:** Document sample datasets (`KSDSCUST.TXT`, `KSDSPOLY.TXT`) - customer and policy test data
+  - **Phase 5 Task 2:** Document simulation configuration (`GENAPP.TXT`, `#SSVARS.TXT`) - workload simulator setup
+  - **Phase 5 Task 3:** Document transaction simulation scripts (`SSC1*`, `SSP1*`, `SSP2*`, `SSP3*`, `SSP4*`) - individual transaction flows
+  - **Phase 5 Task 4:** Document web service simulation (`WSC1*`, `WSLGCF`) - web interface test scenarios
+  - **Phase 5 Task 5:** Document reference data files (`CCOLOR`, `CMAKE`, `CMODEL`, `CTYPE`, `FNAME`, `HTYPE`, `PCODE`, `PTYPE`, `RTYPE`, `SNAME`) - lookup tables and validation data
+  - **Phase 5 Task 6:** Document error and control flows (`ONCICS`, `STOP`, `WASERROR`) - simulation control and exception handling
+  - **Phase 5 Task 7:** Document event bindings (`Transaction_Counters.evbind`) - CICS monitoring configuration
 
 ## Parallelization Notes
 - Pair front-end and back-end COBOL modules in the same lane to avoid re-reading shared commareas.
