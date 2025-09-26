@@ -8,6 +8,10 @@
   - Customer operations: `LGACUS01` (add), `LGICUS01` (inquire), `LGUCUS01` (update) with backing services `LGACDB01`, `LGACVS01`
   - Policy operations: `LGAPOL01` (add), `LGIPOL01` (inquire), `LGUPOL01` (update), `LGDPOL01` (delete) with backing services `LGAPDB01`, `LGAPVS01`
   - All front-end programs follow consistent patterns: commarea validation, request ID checking, backend delegation, error logging via `LGSTSQ`
+- **PHASE 2 COMPLETE:** Documented all remaining database backend services and their data dependencies:
+  - Policy database services: `LGDPDB01` (delete), `LGIPDB01` (inquire), `LGUPDB01` (update) with corresponding VSAM sync services
+  - Customer database services: `LGICDB01` (inquire), `LGUCDB01` (update), `LGACDB02` (security) with VSAM coordination
+  - All database services follow consistent patterns: DB2 operations, VSAM synchronization, comprehensive error handling via `LGSTSQ`
 
 ## Dependency Notes
 - `LGAPOL01` depends on `LGAPDB01` (database insert logic), `LGSTSQ` (TDQ logging helper), and the `LGCMAREA` copybook.
@@ -16,6 +20,9 @@
 - Customer front-ends (`LGACUS01`, `LGICUS01`, `LGUCUS01`) all depend on corresponding DB backends (`LGACDB01`, `LGICDB01`, `LGUCDB01`) and shared infrastructure (`LGSTSQ`, `LGCMAREA`).
 - Policy front-ends (`LGAPOL01`, `LGIPOL01`, `LGUPOL01`, `LGDPOL01`) follow similar patterns with DB backends (`LGAPDB01`, `LGIPDB01`, `LGUPDB01`, `LGDPDB01`).
 - All transaction programs share error logging through `LGSTSQ` and use `LGCMAREA` for consistent commarea structure.
+- **Phase 2 Database Service Dependencies:** All database backend services (`*DB01`) depend on DB2 tables, corresponding VSAM sync services (`*VS01`), shared copybooks (`LGCMAREA`, `LGPOLICY`), and error logging (`LGSTSQ`).
+- **Database-VSAM Synchronization Pattern:** Policy services sync to `KSDSPOLY`, customer services sync to `KSDSCUST`; all VSAM services depend on `LGCMAREA` and `LGSTSQ`.
+- **Customer Security Integration:** `LGACDB01` coordinates with `LGACDB02` for secure credential management in `CUSTOMER_SECURE` table.
 
 ## Tooling
 - Dependency graph helper lives at `tools/dep_graph.py`; default store is `dependency_graph.json`.

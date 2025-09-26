@@ -5,6 +5,16 @@
       "description": "Commercial policy extension",
       "type": "db2-table"
     },
+    "DB2.CUSTOMER": {
+      "depends_on": [],
+      "description": "Customer master table",
+      "type": "db2-table"
+    },
+    "DB2.CUSTOMER_SECURE": {
+      "depends_on": [],
+      "description": "Customer security credentials table",
+      "type": "db2-table"
+    },
     "DB2.ENDOWMENT": {
       "depends_on": [],
       "description": "Endowment policy details",
@@ -25,6 +35,11 @@
       "description": "Core policy header table",
       "type": "db2-table"
     },
+    "KSDSCUST": {
+      "depends_on": [],
+      "description": "VSAM cluster for customer summaries",
+      "type": "vsam-file"
+    },
     "KSDSPOLY": {
       "depends_on": [],
       "description": "VSAM cluster for policy summaries",
@@ -41,9 +56,14 @@
       "type": "cobol"
     },
     "LGACDB02": {
-      "depends_on": [],
-      "description": null,
-      "type": null
+      "depends_on": [
+        "DB2.CUSTOMER_SECURE",
+        "LGCMAREA",
+        "LGPOLICY",
+        "LGSTSQ"
+      ],
+      "description": "Customer security service",
+      "type": "cobol"
     },
     "LGACUS01": {
       "depends_on": [
@@ -101,9 +121,14 @@
       "type": "copybook"
     },
     "LGDPDB01": {
-      "depends_on": [],
-      "description": null,
-      "type": null
+      "depends_on": [
+        "DB2.POLICY",
+        "LGCMAREA",
+        "LGDPVS01",
+        "LGSTSQ"
+      ],
+      "description": "Delete policy database service",
+      "type": "cobol"
     },
     "LGDPOL01": {
       "depends_on": [
@@ -114,10 +139,24 @@
       "description": "Delete policy front-end program",
       "type": "cobol"
     },
+    "LGDPVS01": {
+      "depends_on": [
+        "KSDSPOLY",
+        "LGCMAREA",
+        "LGSTSQ"
+      ],
+      "description": "Delete policy VSAM service",
+      "type": "cobol"
+    },
     "LGICDB01": {
-      "depends_on": [],
-      "description": null,
-      "type": null
+      "depends_on": [
+        "DB2.CUSTOMER",
+        "LGCMAREA",
+        "LGPOLICY",
+        "LGSTSQ"
+      ],
+      "description": "Inquire customer database service",
+      "type": "cobol"
     },
     "LGICUS01": {
       "depends_on": [
@@ -129,9 +168,18 @@
       "type": "cobol"
     },
     "LGIPDB01": {
-      "depends_on": [],
-      "description": null,
-      "type": null
+      "depends_on": [
+        "DB2.COMMERCIAL",
+        "DB2.ENDOWMENT",
+        "DB2.HOUSE",
+        "DB2.MOTOR",
+        "DB2.POLICY",
+        "LGCMAREA",
+        "LGPOLICY",
+        "LGSTSQ"
+      ],
+      "description": "Inquire policy database service",
+      "type": "cobol"
     },
     "LGIPOL01": {
       "depends_on": [
@@ -153,9 +201,15 @@
       "type": "cobol"
     },
     "LGUCDB01": {
-      "depends_on": [],
-      "description": null,
-      "type": null
+      "depends_on": [
+        "DB2.CUSTOMER",
+        "LGCMAREA",
+        "LGPOLICY",
+        "LGSTSQ",
+        "LGUCVS01"
+      ],
+      "description": "Update customer database service",
+      "type": "cobol"
     },
     "LGUCUS01": {
       "depends_on": [
@@ -166,10 +220,28 @@
       "description": "Update customer front-end program",
       "type": "cobol"
     },
+    "LGUCVS01": {
+      "depends_on": [
+        "KSDSCUST",
+        "LGCMAREA",
+        "LGSTSQ"
+      ],
+      "description": "Update customer VSAM service",
+      "type": "cobol"
+    },
     "LGUPDB01": {
-      "depends_on": [],
-      "description": null,
-      "type": null
+      "depends_on": [
+        "DB2.ENDOWMENT",
+        "DB2.HOUSE",
+        "DB2.MOTOR",
+        "DB2.POLICY",
+        "LGCMAREA",
+        "LGPOLICY",
+        "LGSTSQ",
+        "LGUPVS01"
+      ],
+      "description": "Update policy database service",
+      "type": "cobol"
     },
     "LGUPOL01": {
       "depends_on": [
@@ -178,6 +250,15 @@
         "LGUPDB01"
       ],
       "description": "Update policy front-end program",
+      "type": "cobol"
+    },
+    "LGUPVS01": {
+      "depends_on": [
+        "KSDSPOLY",
+        "LGCMAREA",
+        "LGSTSQ"
+      ],
+      "description": "Update policy VSAM service",
       "type": "cobol"
     }
   }
