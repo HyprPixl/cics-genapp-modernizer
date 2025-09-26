@@ -1,5 +1,10 @@
 {
   "nodes": {
+    "#SSVARS.TXT": {
+      "depends_on": [],
+      "description": "Workload simulator shared variables and constants definition file containing counters, strings, and EBCDIC/ASCII conversion tables",
+      "type": "simulation-config"
+    },
     "DB2.COMMERCIAL": {
       "depends_on": [],
       "description": "Commercial policy extension",
@@ -34,6 +39,18 @@
       "depends_on": [],
       "description": "Core policy header table",
       "type": "db2-table"
+    },
+    "GENAPP.TXT": {
+      "depends_on": [
+        "ONCICS",
+        "SSC1A1",
+        "SSP1A1",
+        "SSP2A1",
+        "SSP3A1",
+        "SSP4A1"
+      ],
+      "description": "Main workload simulator configuration file defining network settings, transaction paths, and simulation parameters",
+      "type": "simulation-config"
     },
     "KSDSCUST": {
       "depends_on": [],
@@ -260,6 +277,55 @@
       ],
       "description": "Update policy VSAM service",
       "type": "cobol"
+    },
+    "ONCICS": {
+      "depends_on": [
+        "#SSVARS.TXT"
+      ],
+      "description": "CICS initialization and connection handling script",
+      "type": "simulation-script"
+    },
+    "SSC1A1": {
+      "depends_on": [
+        "#SSVARS.TXT"
+      ],
+      "description": "Customer add simulation script",
+      "type": "simulation-script"
+    },
+    "SSP1A1": {
+      "depends_on": [
+        "#SSVARS.TXT"
+      ],
+      "description": "Policy add simulation script (Type 1)",
+      "type": "simulation-script"
+    },
+    "SSP2A1": {
+      "depends_on": [
+        "#SSVARS.TXT"
+      ],
+      "description": "Life policy add simulation script (Type 2)",
+      "type": "simulation-script"
+    },
+    "SSP3A1": {
+      "depends_on": [
+        "#SSVARS.TXT"
+      ],
+      "description": "House policy add simulation script (Type 3)",
+      "type": "simulation-script"
+    },
+    "SSP4A1": {
+      "depends_on": [
+        "#SSVARS.TXT"
+      ],
+      "description": "Commercial policy add simulation script (Type 4)",
+      "type": "simulation-script"
+    },
+    "STOP": {
+      "depends_on": [
+        "#SSVARS.TXT"
+      ],
+      "description": "Terminal quiesce and shutdown script",
+      "type": "simulation-script"
     }
   }
 }
