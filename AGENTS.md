@@ -23,6 +23,13 @@
 - **Phase 2 Database Service Dependencies:** All database backend services (`*DB01`) depend on DB2 tables, corresponding VSAM sync services (`*VS01`), shared copybooks (`LGCMAREA`, `LGPOLICY`), and error logging (`LGSTSQ`).
 - **Database-VSAM Synchronization Pattern:** Policy services sync to `KSDSPOLY`, customer services sync to `KSDSCUST`; all VSAM services depend on `LGCMAREA` and `LGSTSQ`.
 - **Customer Security Integration:** `LGACDB01` coordinates with `LGACDB02` for secure credential management in `CUSTOMER_SECURE` table.
+- **PHASE 3 COMPLETE:** Documented all shared copybooks and BMS maps that provide data structures and screen layouts for the GenApp system:
+  - Core copybooks: `LGCMAREA` (universal commarea structure), `LGPOLICY` (DB2 field definitions and length constants)
+  - Lookup copybooks: `POLLOOK` (basic policy lookup), `POLLOO2` (multi-policy customer lookup)
+  - SOA interface copybooks: `SOAIC01` (customer), `SOAIPB1` (commercial), `SOAIPE1` (endowment), `SOAIPH1` (house), `SOAIPM1` (motor)
+  - SOA data exchange copybooks: `SOAVCII`/`SOAVCIO` (customer validation), `SOAVPII`/`SOAVPIO` (policy validation)
+  - BMS map: `SSMAP` (3270 terminal screen layouts for customer and policy operations)
+  - Updated dependency graph with all copybook relationships to transaction programs
 
 ## Tooling
 - Dependency graph helper lives at `tools/dep_graph.py`; default store is `dependency_graph.json`.
@@ -35,12 +42,12 @@
 ## Work Sequencing
 - **Phase 1 – Core Transactions (serial):** Continue through customer and policy front-end programs (`LGAPOL01`, `LGAPVS01`, `LGACUS01`, etc.), pairing each with its backing DB module so request/response flows stay consistent.
 - **Phase 2 – Data Services (serial):** Document batch/database utilities (`LGAPDB01`, `LGDPDB01`, `LGIPDB01`, `LGUCDB01`) and shared logging (`LGSTSQ`) once their callers are understood.
-- **Phase 3 – Shared Assets (parallel):** Tackle copybooks and BMS maps alongside transaction work; these can be owned by separate teammates with ongoing updates.
-  - **Phase 3 Task 1:** Document core copybooks (`LGCMAREA`, `LGPOLICY`) - shared data structures
-  - **Phase 3 Task 2:** Document lookup copybooks (`POLLOOK`, `POLLOO2`) - reference data structures  
-  - **Phase 3 Task 3:** Document SOA interface copybooks (`SOAIC01`, `SOAIPB1`, `SOAIPE1`, `SOAIPH1`, `SOAIPM1`) - service interfaces
-  - **Phase 3 Task 4:** Document SOA data copybooks (`SOAVCII`, `SOAVCIO`, `SOAVPII`, `SOAVPIO`) - service data exchange
-  - **Phase 3 Task 5:** Document BMS maps (`SSMAP.bms`) - screen layouts and field definitions
+- **Phase 3 – Shared Assets (parallel):** ✅ **COMPLETE** - All copybooks and BMS maps documented with comprehensive data structure and screen layout information.
+  - **Phase 3 Task 1:** ✅ Document core copybooks (`LGCMAREA`, `LGPOLICY`) - shared data structures
+  - **Phase 3 Task 2:** ✅ Document lookup copybooks (`POLLOOK`, `POLLOO2`) - reference data structures  
+  - **Phase 3 Task 3:** ✅ Document SOA interface copybooks (`SOAIC01`, `SOAIPB1`, `SOAIPE1`, `SOAIPH1`, `SOAIPM1`) - service interfaces
+  - **Phase 3 Task 4:** ✅ Document SOA data copybooks (`SOAVCII`, `SOAVCIO`, `SOAVPII`, `SOAVPIO`) - service data exchange
+  - **Phase 3 Task 5:** ✅ Document BMS maps (`SSMAP.bms`) - screen layouts and field definitions
 - **Phase 4 – Ops & Automation (parallel):** While COBOL review continues, inventory operational artifacts and cross-link to program dependencies.
   - **Phase 4 Task 1:** Document CICS definition JCL (`ADEF121`, `CDEF121-125`) - transaction and program definitions
   - **Phase 4 Task 2:** Document compilation JCL (`COBOL`, `ASMMAP`, `DB2BIND`) - build and deployment jobs

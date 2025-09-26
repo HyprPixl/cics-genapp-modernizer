@@ -1,5 +1,15 @@
 {
   "nodes": {
+    "CICS": {
+      "depends_on": [],
+      "description": null,
+      "type": null
+    },
+    "DB2": {
+      "depends_on": [],
+      "description": null,
+      "type": null
+    },
     "DB2.COMMERCIAL": {
       "depends_on": [],
       "description": "Commercial policy extension",
@@ -116,8 +126,32 @@
       "type": "cobol"
     },
     "LGCMAREA": {
-      "depends_on": [],
-      "description": "Shared commarea layout",
+      "depends_on": [
+        "CICS",
+        "LGACDB01",
+        "LGACDB02",
+        "LGACUS01",
+        "LGACVS01",
+        "LGAPDB01",
+        "LGAPOL01",
+        "LGAPVS01",
+        "LGDPDB01",
+        "LGDPOL01",
+        "LGDPVS01",
+        "LGICDB01",
+        "LGICUS01",
+        "LGICVS01",
+        "LGIPDB01",
+        "LGIPOL01",
+        "LGIPVS01",
+        "LGUCDB01",
+        "LGUCUS01",
+        "LGUCVS01",
+        "LGUPDB01",
+        "LGUPOL01",
+        "LGUPVS01"
+      ],
+      "description": "Core communication area structure for all GenApp transaction programs",
       "type": "copybook"
     },
     "LGDPDB01": {
@@ -167,6 +201,11 @@
       "description": "Inquire customer front-end program",
       "type": "cobol"
     },
+    "LGICVS01": {
+      "depends_on": [],
+      "description": null,
+      "type": null
+    },
     "LGIPDB01": {
       "depends_on": [
         "DB2.COMMERCIAL",
@@ -190,10 +229,24 @@
       "description": "Inquire policy front-end program",
       "type": "cobol"
     },
-    "LGPOLICY": {
+    "LGIPVS01": {
       "depends_on": [],
-      "description": "Embedded SQL host variable definitions",
-      "type": "sql-include"
+      "description": null,
+      "type": null
+    },
+    "LGPOLICY": {
+      "depends_on": [
+        "DB2",
+        "LGACDB01",
+        "LGACDB02",
+        "LGAPDB01",
+        "LGICDB01",
+        "LGIPDB01",
+        "LGUCDB01",
+        "LGUPDB01"
+      ],
+      "description": "Database field definitions and length constants for all policy types",
+      "type": "copybook"
     },
     "LGSTSQ": {
       "depends_on": [],
@@ -260,6 +313,68 @@
       ],
       "description": "Update policy VSAM service",
       "type": "cobol"
+    },
+    "POLLOO2": {
+      "depends_on": [],
+      "description": "Multi-policy customer lookup structure with policy arrays",
+      "type": "copybook"
+    },
+    "POLLOOK": {
+      "depends_on": [],
+      "description": "Basic policy lookup structure for lightweight operations",
+      "type": "copybook"
+    },
+    "SOAIC01": {
+      "depends_on": [],
+      "description": "Customer service interface for SOA operations",
+      "type": "copybook"
+    },
+    "SOAIPB1": {
+      "depends_on": [],
+      "description": "Commercial policy interface for business insurance",
+      "type": "copybook"
+    },
+    "SOAIPE1": {
+      "depends_on": [],
+      "description": "Endowment policy interface for life insurance",
+      "type": "copybook"
+    },
+    "SOAIPH1": {
+      "depends_on": [],
+      "description": "House policy interface for residential insurance",
+      "type": "copybook"
+    },
+    "SOAIPM1": {
+      "depends_on": [],
+      "description": "Motor policy interface for vehicle insurance",
+      "type": "copybook"
+    },
+    "SOAVCII": {
+      "depends_on": [],
+      "description": "Customer input validation structure",
+      "type": "copybook"
+    },
+    "SOAVCIO": {
+      "depends_on": [],
+      "description": "Customer output communication structure",
+      "type": "copybook"
+    },
+    "SOAVPII": {
+      "depends_on": [],
+      "description": "Policy input validation structure",
+      "type": "copybook"
+    },
+    "SOAVPIO": {
+      "depends_on": [],
+      "description": "Policy output communication structure",
+      "type": "copybook"
+    },
+    "SSMAP": {
+      "depends_on": [
+        "CICS"
+      ],
+      "description": "BMS mapset defining 3270 terminal screen layouts for customer and policy operations",
+      "type": "bms-map"
     }
   }
 }

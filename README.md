@@ -141,6 +141,85 @@
 - Error Handling: returns `01` for policy not found, `02` for timestamp mismatch (concurrent update), `90` for SQL errors; includes transaction rollback on failures and comprehensive cursor cleanup.
 - Notes: uses DB2 cursor with FOR UPDATE to lock policy records; validates last-changed timestamp to detect concurrent modifications; updates both main POLICY table and policy-type-specific tables; refreshes timestamp and synchronizes to VSAM on successful completion.
 
+## Shared Copybooks & Maps
+### LGCMAREA – Core Communication Area Structure
+- Purpose: central commarea structure used by all GenApp transaction programs to standardize inter-program communication and data exchange.
+- Structure: 32,500-byte flexible layout with 28-byte header (`CA-REQUEST-ID`, `CA-RETURN-CODE`, `CA-CUSTOMER-NUM`) plus polymorphic payload section `CA-REQUEST-SPECIFIC` that redefined for different operation types.
+- Customer Operations: `CA-CUSTOMER-REQUEST` redefine provides customer profile fields (name, DOB, address, phone, email) plus variable policy data area.
+- Customer Security: `CA-CUSTSECR-REQUEST` redefine handles authentication with encrypted password, change count, and security state indicator.
+- Policy Operations: `CA-POLICY-REQUEST` redefine includes policy number and common policy details (dates, broker info, payment) with type-specific sections for Endowment, House, Motor, Commercial, and Claim data.
+- Usage Pattern: all front-end transaction programs (`*01`) validate commarea length and structure before delegating to corresponding backend services; enables consistent error handling and request/response formatting across the application.
+
+### LGPOLICY – Database Field Definitions
+- Purpose: comprehensive DB2 host variable definitions and length constants used by database service programs for consistent field mapping and validation.
+- Length Constants: `WS-POLICY-LENGTHS` section defines computed field lengths for all policy types (Customer: 72, Policy: 72, Endowment: 52, House: 58, Motor: 65, Commercial: 1102, Claim: 546 bytes) plus full record lengths for commarea validation.
+- Database Structures: mirrors DB2 table schemas with `DB2-CUSTOMER`, `DB2-POLICY`, `DB2-ENDOWMENT`, `DB2-HOUSE`, `DB2-MOTOR`, `DB2-COMMERCIAL`, and `DB2-CLAIM` sections providing exact field definitions for SQL operations.
+- Field Alignment: ensures COBOL data types and lengths match corresponding DB2 column definitions to prevent data truncation or type conversion errors during database operations.
+- Dependencies: used by all database backend services (`*DB01` programs) for SQL host variable declarations and by frontend programs for commarea length validation calculations.
+
+### POLLOOK & POLLOO2 – Policy Lookup Structures
+- Purpose: simplified commarea structures for lightweight policy lookup operations, particularly in batch processing and inquiry scenarios.
+- POLLOOK: basic 3-field structure with request ID (6 chars), customer number (10 digits), and general request-specific data (32,482 bytes) for simple customer-based policy queries.
+- POLLOO2: specialized structure for multi-policy customer scenarios with `CA-CUSPOL-REQUEST` containing array of 5 policy entries, each with policy number and type indicator, plus additional policy data area.
+- Usage: primarily used in policy inquiry and customer summary operations where full `LGCMAREA` structure would be unnecessarily complex; enables efficient policy enumeration and selective data retrieval.
+
+### SOA Interface Copybooks – Service Integration Structures
+#### SOAIC01 – Customer Service Interface
+- Purpose: customer-focused SOA service interface providing streamlined customer data exchange with reduced payload size (30KB vs 32KB) for web service compatibility.
+- Structure: standard header fields (`CA-REQUEST-ID`, `CA-RETURN-CODE`, `CA-CUSTOMER-NUM`) followed by complete customer profile (name, DOB, address, contact info) and compact policy data area.
+- Usage: designed for customer inquiry and update operations in service-oriented architecture scenarios where payload size constraints apply.
+
+#### SOAIPB1 – Commercial Policy Interface
+- Purpose: commercial policy-specific interface optimized for business insurance operations with comprehensive property and risk assessment data.
+- Structure: standard header plus policy common fields (dates, broker, payment) followed by complete commercial policy details (address, coordinates, property type, peril coverage, premiums, status).
+- Risk Management: includes detailed peril coverage fields (Fire, Crime, Flood, Weather) with separate risk assessment and premium calculation areas for complex commercial underwriting.
+
+#### SOAIPE1 – Endowment Policy Interface
+- Purpose: life insurance and investment product interface supporting endowment policy operations with fund management and assurance details.
+- Structure: standard header plus policy basics extended with endowment-specific fields (with-profits indicator, equities, managed fund selection, term, sum assured, life assured details).
+- Investment Focus: designed for life insurance products with investment components requiring fund selection and profit-sharing configuration.
+
+#### SOAIPH1 – House Policy Interface
+- Purpose: residential property insurance interface optimized for home insurance operations with property valuation and location details.
+- Structure: standard header plus policy common data followed by house-specific fields (property type, bedrooms, value, address components).
+- Property Details: includes comprehensive residential property information for underwriting and risk assessment of domestic insurance policies.
+
+#### SOAIPM1 – Motor Policy Interface
+- Purpose: vehicle insurance interface supporting comprehensive motor insurance operations with vehicle specifications and claim history.
+- Structure: standard header plus policy basics extended with motor-specific details (make, model, value, registration, color, engine size, manufacturing date, premium, accident history).
+- Vehicle Focus: provides complete vehicle profile for motor insurance underwriting, premium calculation, and claim management operations.
+
+### SOA Data Exchange Copybooks – Validation & Communication
+#### SOAVCII – Customer Input Validation
+- Purpose: minimal input validation structure for customer operations providing basic customer number input with buffer space for service validation routines.
+- Structure: simple 2-field layout with customer number (10 chars) and 72-byte buffer for validation data or error information.
+
+#### SOAVCIO – Customer Output Communication
+- Purpose: compact customer output structure for service responses with text message and high-level status indicator fields.
+- Structure: 3-field layout with descriptive text (14 chars), high-priority indicator (10 chars), and 48-byte filler for additional response data.
+
+#### SOAVPII – Policy Input Validation
+- Purpose: policy lookup input structure designed for policy number validation services with policy type discrimination capability.
+- Structure: minimal 3-field layout with policy type indicator (1 char), customer number (10 digits), and 79-byte buffer for additional validation parameters.
+
+#### SOAVPIO – Policy Output Communication
+- Purpose: policy lookup output structure providing policy identification results with key information for downstream processing.
+- Structure: response format with descriptive text (11 chars), composite key containing policy type and numbers (customer: 10 digits, policy: 10 digits), and 48-byte buffer for additional output data.
+
+### SSMAP.BMS – Screen Layout Definitions
+- Purpose: BMS mapset defining 3270 terminal screen layouts for customer and policy management transactions, providing standardized user interface across all GenApp operations.
+- Screen Types: supports multiple transaction screens including customer menu (SSMAPC1), motor policy menu (SSMAPP1), and additional policy type screens for complete transaction coverage.
+
+#### Customer Screen (SSMAPC1)
+- Layout: 24x80 character screen with title 'General Insurance Customer Menu' and menu options for customer inquiry (1), add (2), and update (4) operations.
+- Input Fields: customer number (10 digits, right-justified with zero fill), customer name (first: 10 chars, last: 20 chars), date of birth (10 chars with yyyy-mm-dd format), address components (house name: 20 chars, number: 4 chars, postcode: 8 chars), phone numbers (home/mobile: 20 chars each), and email address (27 chars).
+- Navigation: option selection field (1 character, numeric, required entry) and error message area (40 characters) for user feedback and validation messages.
+
+#### Motor Policy Screen (SSMAPP1)
+- Layout: 24x80 character screen with title 'General Insurance Motor Policy Menu' supporting policy inquiry (1), add (2), delete (3), and update (4) operations.
+- Policy Fields: policy number (10 digits, right-justified), customer number (10 digits), issue and expiry dates (10 chars each with yyyy-mm-dd format), vehicle details including make, model, value, registration, color, engine capacity, manufacturing date, premium amounts, and accident history.
+- Data Entry: comprehensive vehicle information capture supporting complete motor insurance underwriting with validation and formatting requirements for numeric and date fields.
+
 ## Immediate Findings & Questions
 - `install.sh` expects `tsocmd` and USS `cp` with dataset support; confirm environment prerequisites.
 - Customer experience assets hint at established monitoring and test flows; identify current owners.
