@@ -35,6 +35,49 @@
       "description": "Core policy header table",
       "type": "db2-table"
     },
+    "DB2CRE.JCL": {
+      "depends_on": [
+        "DB2.COMMERCIAL",
+        "DB2.CUSTOMER",
+        "DB2.CUSTOMER_SECURE",
+        "DB2.ENDOWMENT",
+        "DB2.HOUSE",
+        "DB2.MOTOR",
+        "DB2.POLICY"
+      ],
+      "description": "DB2 database creation job - creates storage groups, databases, tablespaces, and application tables",
+      "type": "jcl-job"
+    },
+    "DB2DEL.JCL": {
+      "depends_on": [],
+      "description": "DB2 database cleanup job - removes all GenApp DB2 objects and packages",
+      "type": "jcl-job"
+    },
+    "DEFDREP.JCL": {
+      "depends_on": [],
+      "description": "CPSM repository definition job - creates and initializes CICSPlex management repository",
+      "type": "jcl-job"
+    },
+    "DEFWREP.JCL": {
+      "depends_on": [],
+      "description": "WUI repository definition job - creates VSAM repository for web interface server",
+      "type": "jcl-job"
+    },
+    "ITPENTR.JCL": {
+      "depends_on": [],
+      "description": "TPNS workload simulator entry point - runs simulation scenarios against CICS GenApp",
+      "type": "jcl-job"
+    },
+    "ITPLL.JCL": {
+      "depends_on": [],
+      "description": "ITP log list processor - formats simulation logs into performance reports",
+      "type": "jcl-job"
+    },
+    "ITPSTL.JCL": {
+      "depends_on": [],
+      "description": "ITP script translation/compilation - compiles simulation scripts for execution",
+      "type": "jcl-job"
+    },
     "KSDSCUST": {
       "depends_on": [],
       "description": "VSAM cluster for customer summaries",
@@ -167,6 +210,11 @@
       "description": "Inquire customer front-end program",
       "type": "cobol"
     },
+    "LGICVS01": {
+      "depends_on": [],
+      "description": null,
+      "type": null
+    },
     "LGIPDB01": {
       "depends_on": [
         "DB2.COMMERCIAL",
@@ -189,6 +237,11 @@
       ],
       "description": "Inquire policy front-end program",
       "type": "cobol"
+    },
+    "LGIPVS01": {
+      "depends_on": [],
+      "description": null,
+      "type": null
     },
     "LGPOLICY": {
       "depends_on": [],
@@ -260,6 +313,138 @@
       ],
       "description": "Update policy VSAM service",
       "type": "cobol"
+    },
+    "SAMPCMA.JCL": {
+      "depends_on": [],
+      "description": "CICS CICSPlex System Manager startup job - provides centralized CICS resource management",
+      "type": "jcl-job"
+    },
+    "SAMPNCS.JCL": {
+      "depends_on": [],
+      "description": "Named Counter Server startup job - provides shared numeric counters across CICS regions",
+      "type": "jcl-job"
+    },
+    "SAMPTSQ.JCL": {
+      "depends_on": [],
+      "description": "Shared Temporary Storage Queue server startup - manages cross-region temporary storage",
+      "type": "jcl-job"
+    },
+    "SAMPWUI.JCL": {
+      "depends_on": [],
+      "description": "Web User Interface server startup - provides web-based CICS administration",
+      "type": "jcl-job"
+    },
+    "SOAIC01": {
+      "depends_on": [],
+      "description": "SOA interface copybook for customer operations",
+      "type": "copybook"
+    },
+    "SOAIPB1": {
+      "depends_on": [],
+      "description": "SOA interface copybook for commercial policy operations",
+      "type": "copybook"
+    },
+    "SOAIPE1": {
+      "depends_on": [],
+      "description": "SOA interface copybook for endowment policy operations",
+      "type": "copybook"
+    },
+    "SOAIPH1": {
+      "depends_on": [],
+      "description": "SOA interface copybook for house policy operations",
+      "type": "copybook"
+    },
+    "SOAIPM1": {
+      "depends_on": [],
+      "description": "SOA interface copybook for motor policy operations",
+      "type": "copybook"
+    },
+    "SOAVCII": {
+      "depends_on": [],
+      "description": "SOA VSAM customer input interface copybook",
+      "type": "copybook"
+    },
+    "SOAVCIO": {
+      "depends_on": [],
+      "description": "SOA VSAM customer output interface copybook",
+      "type": "copybook"
+    },
+    "SOAVPII": {
+      "depends_on": [],
+      "description": "SOA VSAM policy input interface copybook",
+      "type": "copybook"
+    },
+    "SOAVPIO": {
+      "depends_on": [],
+      "description": "SOA VSAM policy output interface copybook",
+      "type": "copybook"
+    },
+    "WSAAC01.JCL": {
+      "depends_on": [
+        "LGACUS01",
+        "SOAIC01"
+      ],
+      "description": "Customer add web service generation - creates WSDL artifacts for LGACUS01 service",
+      "type": "jcl-job"
+    },
+    "WSAAP01.JCL": {
+      "depends_on": [
+        "LGAPOL01",
+        "SOAIPB1",
+        "SOAIPE1",
+        "SOAIPH1",
+        "SOAIPM1"
+      ],
+      "description": "Policy add web service generation - creates WSDL artifacts for LGAPOL01 service across all policy types",
+      "type": "jcl-job"
+    },
+    "WSAIC01.JCL": {
+      "depends_on": [
+        "LGICUS01",
+        "SOAIC01"
+      ],
+      "description": "Customer inquiry web service generation - creates WSDL artifacts for LGICUS01 service",
+      "type": "jcl-job"
+    },
+    "WSAIP01.JCL": {
+      "depends_on": [
+        "LGIPOL01"
+      ],
+      "description": "Policy inquiry web service generation - creates WSDL artifacts for LGIPOL01 service across all policy types",
+      "type": "jcl-job"
+    },
+    "WSAUC01.JCL": {
+      "depends_on": [
+        "LGUCUS01",
+        "SOAIC01"
+      ],
+      "description": "Customer update web service generation - creates WSDL artifacts for LGUCUS01 service",
+      "type": "jcl-job"
+    },
+    "WSAUP01.JCL": {
+      "depends_on": [
+        "LGUPOL01"
+      ],
+      "description": "Policy update web service generation - creates WSDL artifacts for LGUPOL01 service across all policy types",
+      "type": "jcl-job"
+    },
+    "WSAVC01.JCL": {
+      "depends_on": [
+        "LGICVS01",
+        "SOAVCII",
+        "SOAVCIO"
+      ],
+      "description": "Customer VSAM web service generation - creates WSDL artifacts for LGICVS01 direct VSAM access",
+      "type": "jcl-job"
+    },
+    "WSAVP01.JCL": {
+      "depends_on": [
+        "LGIPVS01",
+        "SOAVPII",
+        "SOAVPIO"
+      ],
+      "description": "Policy VSAM web service generation - creates WSDL artifacts for LGIPVS01 direct VSAM access",
+      "type": "jcl-job"
     }
   }
 }

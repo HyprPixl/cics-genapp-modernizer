@@ -141,6 +141,130 @@
 - Error Handling: returns `01` for policy not found, `02` for timestamp mismatch (concurrent update), `90` for SQL errors; includes transaction rollback on failures and comprehensive cursor cleanup.
 - Notes: uses DB2 cursor with FOR UPDATE to lock policy records; validates last-changed timestamp to detect concurrent modifications; updates both main POLICY table and policy-type-specific tables; refreshes timestamp and synchronizes to VSAM on successful completion.
 
+## JCL Operations Infrastructure
+### Database Setup Jobs (Phase 4 Task 3)
+#### DB2CRE.JCL – Database Creation Job
+- Purpose: comprehensive DB2 environment setup including storage groups, databases, tablespaces, and all GenApp application tables.
+- Dependencies: DB2 subsystem (`<DB2SSID>`), DB2 load libraries (`<DB2HLQ>.SDSNLOAD`), authorization ID (`<SQLID>`), database ID (`<DB2DBID>`).
+- Operations: creates storage group `GENASG02`, database `<DB2DBID>`, seven tablespaces (`GENATS01-07`), and tables (`CUSTOMER`, `CUSTOMER_SECURE`, `POLICY`, `ENDOWMENT`, `HOUSE`, `MOTOR`, `COMMERCIAL`, `CLAIM`).
+- Table Structures: supports insurance application with customer demographics, policy hierarchy, and type-specific policy extensions; includes identity columns and timestamp fields.
+
+#### DB2DEL.JCL – Database Cleanup Job  
+- Purpose: complete teardown of GenApp DB2 environment for clean reinstallation or environment removal.
+- Dependencies: DB2 subsystem, package collection `GENASA1`, plan `GENAONE`, same authorization as creation job.
+- Operations: drops all tables in dependency order, removes tablespaces and database, cleans up storage group; frees DB2 packages and plan.
+- Notes: handles referential integrity through careful drop sequence; sets `MAXCC=0` to continue despite missing objects.
+
+#### DEFDREP.JCL – CPSM Repository Definition
+- Purpose: defines and initializes CPSM (CICSPlex System Manager) repository for centralized CICS resource management.
+- Dependencies: CPSM libraries (`<CPSMHLQ>`), CMAS application ID (`<CMASAPPL>`), CMAS system ID (`<CMASYSID>`), WUI application ID (`<WUIAPPL>`).
+- Operations: deletes existing `EYUDREP` cluster, creates new VSAM cluster with 500/3000 record allocation, initializes repository with system parameters.
+- Configuration: sets timezone, daylight savings, and WUI server connection parameters for CICSPlex management interface.
+
+#### DEFWREP.JCL – WUI Repository Definition
+- Purpose: creates VSAM repository for CICS Web User Interface server to support web-based CICS administration.
+- Dependencies: WUI application ID (`<WUIAPPL>`), storage class `STANDARD`, VSAM catalog support.
+- Operations: removes existing `EYUWREP` cluster, defines new spanned VSAM cluster with 5000 record allocation and 32KB maximum record size.
+- Notes: supports variable-length records for web interface metadata; uses large control interval size for performance.
+
+### Workload Simulation Infrastructure (Phase 4 Task 4)
+#### ITPENTR.JCL – TPNS Workload Simulator Entry Point
+- Purpose: main entry point for running TPNS (Teleprocessing Network Simulator) workload scenarios against CICS GenApp.
+- Dependencies: TPNS load library (`<WSIMHLQ>.SITPLOAD`), initialization datasets (`<WSIMWSX>`, `<WSIMMSX>`), log dataset (`<WSIMLGX>`).
+- Operations: executes ITPENTER program with GENAPP network configuration; processes simulation scripts and generates performance logs.
+- Configuration: supports unlimited region size for large-scale workload simulation; includes dump and print output for diagnostics.
+
+#### ITPLL.JCL – ITP Log List Processor
+- Purpose: processes TPNS simulation logs to generate formatted reports and performance analytics.
+- Dependencies: SITPLOAD library, simulation log datasets (`<WSIMLGX>`).
+- Operations: runs ITPLL program with console formatting, SNA display, and data analysis options; produces formatted simulation reports.
+- Output: generates system print output for simulation analysis and performance tuning.
+
+#### ITPSTL.JCL – ITP Script Translation/Compilation
+- Purpose: compiles and translates TPNS simulation scripts into executable format for workload testing.
+- Dependencies: SITPLOAD library, simulation script library (`<WSIMWSX>`), message library (`<WSIMMSX>`).
+- Operations: batch processes simulation scripts including customer (`SSC1*`), policy (`SSP1*-SSP4*`), web service (`WSC1*`) scenarios, and control scripts (`#ONCICS`, `#SSVARS`, `STOP`).
+- Script Types: covers complete transaction simulation workflow from CICS startup through individual transaction testing to system shutdown.
+
+#### SAMPCMA.JCL – CICS CICSPlex System Manager Startup
+- Purpose: starts CICS CICSPlex System Manager (CPSM) for centralized management of CICS regions and resources.
+- Dependencies: CICS libraries (`<CICSHLQ>`), CPSM libraries (`<CPSMHLQ>`), LE runtime (`<CEEHLQ>`), CPSM repository (`EYUDREP`).
+- Configuration: enables security, TCP/IP connectivity, and web interface integration; supports unlimited region size and extended memory limits.
+- Operations: establishes CICSPlex management context with connection to WUI server for web-based administration.
+
+#### SAMPNCS.JCL – Named Counter Server  
+- Purpose: starts CICS Named Counter Server to provide shared numeric counters across CICS regions.
+- Dependencies: CICS authentication libraries, counter pool name `GENA`.
+- Operations: runs DFHNCMN program to manage shared counters used by GenApp for customer number generation and other sequencing needs.
+- Notes: provides centralized counter management for distributed CICS environment; supports customer number assignment in `LGACDB01`.
+
+#### SAMPTSQ.JCL – Shared Temporary Storage Queue Server
+- Purpose: starts CICS Shared Temporary Storage Queue server for cross-region temporary storage management.
+- Dependencies: CICS authentication libraries, queue pool name `GENA`.
+- Configuration: supports 500 maximum queues with 750 buffers for high-volume temporary storage operations.
+- Operations: runs DFHXQMN program to provide shared temporary storage services across CICS regions; supports queue sharing for GenApp workloads.
+
+#### SAMPWUI.JCL – Web User Interface Server
+- Purpose: starts CICS Web User Interface server to provide web-based administration capabilities for CICSPlex management.
+- Dependencies: CICS libraries, CPSM libraries, LE runtime, WUI repository (`EYUWREP`), load library (`<LOADX>`).
+- Configuration: enables TCP/IP HTTP host on port 6345, CMCI port 6346, with 3600-second inactive timeout; connects to CICSPlex context.
+- Operations: provides web interface for CICS resource management, monitoring, and administration through browser-based tools.
+
+### Web Service Automation Jobs (Phase 4 Task 5)
+#### WSA*.JCL Pattern – Language Structure to WSDL Conversion
+- Purpose: automated generation of WSDL (Web Services Description Language) files and binding artifacts from COBOL program structures.
+- Dependencies: CICS LS2WS procedure (`DFHLS2WS`), Java runtime, source library (`<SOURCEX>`), copybook members, USS file system (`<ZFSHOME>`).
+- Pattern: each WSA job processes specific COBOL programs with corresponding SOA interface copybooks to generate web service artifacts.
+- Output: generates `.wsdl`, `.wsbind` files, and log files in USS directory structure for web service deployment.
+
+#### WSAAC01.JCL – Customer Add Web Service Generation
+- Purpose: generates WSDL and binding artifacts for customer add service (`LGACUS01`) web service interface.
+- Programs: processes `LGACUS01` with `SOAIC01` copybook for request/response structures.
+- Artifacts: creates `LGACUS01.wsdl`, `LGACUS01.wsbind`, service logs in `/genapp/logs/` and service directory `/genapp/wsdir/`.
+- URI: maps to `GENAPP/LGACUS01` web service endpoint for customer creation operations.
+
+#### WSAAP01.JCL – Policy Add Web Service Generation  
+- Purpose: generates WSDL artifacts for all policy add operations (`LGAPOL01`) across different policy types.
+- Policy Types: creates separate web service definitions for Motor (`SOAIPM1`), House (`SOAIPH1`), Endowment (`SOAIPE1`), and Commercial (`SOAIPB1`) policies.
+- Artifacts: generates type-specific WSDL files (`LGAPOLM1.wsdl`, `LGAPOLH1.wsdl`, `LGAPOLE1.wsdl`, `LGAPOLB1.wsdl`) with corresponding binding files.
+- URIs: maps to policy-type-specific endpoints (`GENAPP/LGAPOLM1`, `GENAPP/LGAPOLH1`, etc.) for targeted policy creation.
+
+#### WSAIC01.JCL – Customer Inquiry Web Service Generation
+- Purpose: generates WSDL and binding artifacts for customer inquiry service (`LGICUS01`) web service interface.
+- Programs: processes `LGICUS01` with `SOAIC01` copybook for customer lookup request/response structures.
+- Artifacts: creates `LGICUS01.wsdl`, `LGICUS01.wsbind`, and service logs for customer inquiry web service.
+- URI: maps to `GENAPP/LGICUS01` web service endpoint for customer information retrieval operations.
+
+#### WSAIP01.JCL – Policy Inquiry Web Service Generation
+- Purpose: generates WSDL artifacts for all policy inquiry operations (`LGIPOL01`) across different policy types and special mobile interface.
+- Policy Types: creates separate web service definitions for Motor, House, Endowment, and Commercial policy inquiries; includes special mobile sample interface (`IPPROGMB`).
+- Copybooks: uses policy-type-specific copybooks (`SOAIPM1`, `SOAIPH1`, `SOAIPE1`, `SOAIPB1`) and mobile lookup copybooks (`POLLOOK`, `POLLOO2`).
+- URIs: maps to policy-type-specific inquiry endpoints and mobile interface (`GENAPP/LGIPOL02`) for multi-record policy lookups.
+
+#### WSAUC01.JCL – Customer Update Web Service Generation
+- Purpose: generates WSDL and binding artifacts for customer update service (`LGUCUS01`) web service interface.
+- Programs: processes `LGUCUS01` with `SOAIC01` copybook for customer update request/response structures.
+- Artifacts: creates `LGUCUS01.wsdl`, `LGUCUS01.wsbind`, and service logs for customer modification web service.
+- URI: maps to `GENAPP/LGUCUS01` web service endpoint for customer profile update operations.
+
+#### WSAUP01.JCL – Policy Update Web Service Generation
+- Purpose: generates WSDL artifacts for all policy update operations (`LGUPOL01`) across different policy types.
+- Policy Types: creates separate web service definitions for Motor, House, Endowment, and Commercial policy updates.
+- Artifacts: generates type-specific WSDL files (`LGUPOLM1.wsdl`, `LGUPOLH1.wsdl`, `LGUPOLE1.wsdl`, `LGUPOLB1.wsdl`) with corresponding binding files.
+- URIs: maps to policy-type-specific update endpoints (`GENAPP/LGUPOLM1`, etc.) for targeted policy modification operations.
+
+#### WSAVC01.JCL – Customer VSAM Web Service Generation
+- Purpose: generates WSDL and binding artifacts for customer VSAM lookup service (`LGICVS01`) for direct VSAM file access.
+- Programs: processes `LGICVS01` with VSAM-specific copybooks (`SOAVCII`, `SOAVCIO`) for VSAM customer file operations.
+- Artifacts: creates `LGICVS01.wsdl`, `LGICVS01.wsbind`, and service logs for VSAM customer lookup web service.
+- URI: maps to `GENAPP/LGICVS01` web service endpoint for direct customer VSAM file access.
+
+#### WSAVP01.JCL – Policy VSAM Web Service Generation
+- Purpose: generates WSDL and binding artifacts for policy VSAM lookup service (`LGIPVS01`) for direct VSAM file access.
+- Programs: processes `LGIPVS01` with VSAM-specific copybooks (`SOAVPII`, `SOAVPIO`) for VSAM policy file operations.
+- Artifacts: creates `LGIPVS01.wsdl`, `LGIPVS01.wsbind`, and service logs for VSAM policy lookup web service.  
+- URI: maps to `GENAPP/LGIPVS01` web service endpoint for direct policy VSAM file access.
+
 ## Immediate Findings & Questions
 - `install.sh` expects `tsocmd` and USS `cp` with dataset support; confirm environment prerequisites.
 - Customer experience assets hint at established monitoring and test flows; identify current owners.

@@ -12,6 +12,11 @@
   - Policy database services: `LGDPDB01` (delete), `LGIPDB01` (inquire), `LGUPDB01` (update) with corresponding VSAM sync services
   - Customer database services: `LGICDB01` (inquire), `LGUCDB01` (update), `LGACDB02` (security) with VSAM coordination
   - All database services follow consistent patterns: DB2 operations, VSAM synchronization, comprehensive error handling via `LGSTSQ`
+- **PHASE 4 TASKS 3, 4, 5 COMPLETE:** Documented all database setup, workload simulation, and web service automation JCL jobs:
+  - Database Setup: `DB2CRE` (create), `DB2DEL` (cleanup), `DEFDREP` (CPSM repository), `DEFWREP` (WUI repository)
+  - Workload Simulation: `ITPENTR` (simulator entry), `ITPLL` (log processor), `ITPSTL` (script compiler), `SAMPCMA` (CPSM startup), `SAMPNCS` (counter server), `SAMPTSQ` (TS queue server), `SAMPWUI` (WUI server)
+  - Web Service Automation: `WSA*01` series covering customer and policy operations across all transaction types with VSAM access options
+  - All JCL jobs documented with purpose, dependencies, operations, and configuration details; added to dependency graph with relationships
 
 ## Dependency Notes
 - `LGAPOL01` depends on `LGAPDB01` (database insert logic), `LGSTSQ` (TDQ logging helper), and the `LGCMAREA` copybook.
