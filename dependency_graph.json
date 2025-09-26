@@ -1,5 +1,48 @@
 {
   "nodes": {
+    "ADEF121.JCL": {
+      "depends_on": [
+        "KSDSCUST",
+        "KSDSPOLY"
+      ],
+      "description": "VSAM file allocation and data setup JCL - defines KSDSCUST and KSDSPOLY clusters and loads initial data",
+      "type": "jcl"
+    },
+    "ASMMAP.JCL": {
+      "depends_on": [],
+      "description": "BMS map assembler compilation JCL - assembles SSMAP into executable and DSECT forms for screen handling",
+      "type": "jcl"
+    },
+    "CDEF121.JCL": {
+      "depends_on": [],
+      "description": "Standalone GenApp CICS definitions - programs, transactions, files, and DB2 connections for single-region configuration",
+      "type": "jcl"
+    },
+    "CDEF122.JCL": {
+      "depends_on": [],
+      "description": "TOR-AOR-DOR configuration CICS definitions - distributed region setup with remote system connections",
+      "type": "jcl"
+    },
+    "CDEF123.JCL": {
+      "depends_on": [],
+      "description": "Extended TOR-AOR-DOR configuration with dynamic program invocation and mirror transactions",
+      "type": "jcl"
+    },
+    "CDEF124.JCL": {
+      "depends_on": [],
+      "description": "Web services CICS definitions - TCPIP services and pipeline configurations for SOAP services",
+      "type": "jcl"
+    },
+    "CDEF125.JCL": {
+      "depends_on": [],
+      "description": "Event processing CICS definitions - transaction throughput monitoring and business event bundles",
+      "type": "jcl"
+    },
+    "COBOL.JCL": {
+      "depends_on": [],
+      "description": "COBOL compilation JCL - comprehensive build procedure for all COBOL programs with DB2 preprocessing and linkage editing",
+      "type": "jcl"
+    },
     "DB2.COMMERCIAL": {
       "depends_on": [],
       "description": "Commercial policy extension",
@@ -35,18 +78,29 @@
       "description": "Core policy header table",
       "type": "db2-table"
     },
-    "KSDSCUST": {
+    "DB2BIND.JCL": {
       "depends_on": [],
+      "description": "DB2 bind JCL - creates packages and plans for all database-enabled programs with GENAONE plan",
+      "type": "jcl"
+    },
+    "KSDSCUST": {
+      "depends_on": [
+        "CDEF121.JCL"
+      ],
       "description": "VSAM cluster for customer summaries",
       "type": "vsam-file"
     },
     "KSDSPOLY": {
-      "depends_on": [],
+      "depends_on": [
+        "CDEF121.JCL"
+      ],
       "description": "VSAM cluster for policy summaries",
       "type": "vsam-file"
     },
     "LGACDB01": {
       "depends_on": [
+        "COBOL.JCL",
+        "DB2BIND.JCL",
         "LGACDB02",
         "LGACVS01",
         "LGCMAREA",
@@ -58,6 +112,7 @@
     "LGACDB02": {
       "depends_on": [
         "DB2.CUSTOMER_SECURE",
+        "DB2BIND.JCL",
         "LGCMAREA",
         "LGPOLICY",
         "LGSTSQ"
@@ -67,6 +122,8 @@
     },
     "LGACUS01": {
       "depends_on": [
+        "CDEF121.JCL",
+        "COBOL.JCL",
         "LGACDB01",
         "LGCMAREA",
         "LGSTSQ"
@@ -84,11 +141,13 @@
     },
     "LGAPDB01": {
       "depends_on": [
+        "COBOL.JCL",
         "DB2.COMMERCIAL",
         "DB2.ENDOWMENT",
         "DB2.HOUSE",
         "DB2.MOTOR",
         "DB2.POLICY",
+        "DB2BIND.JCL",
         "LGAPVS01",
         "LGCMAREA",
         "LGPOLICY",
@@ -99,6 +158,8 @@
     },
     "LGAPOL01": {
       "depends_on": [
+        "CDEF121.JCL",
+        "COBOL.JCL",
         "LGAPDB01",
         "LGCMAREA",
         "LGSTSQ"
@@ -123,6 +184,7 @@
     "LGDPDB01": {
       "depends_on": [
         "DB2.POLICY",
+        "DB2BIND.JCL",
         "LGCMAREA",
         "LGDPVS01",
         "LGSTSQ"
@@ -151,6 +213,7 @@
     "LGICDB01": {
       "depends_on": [
         "DB2.CUSTOMER",
+        "DB2BIND.JCL",
         "LGCMAREA",
         "LGPOLICY",
         "LGSTSQ"
@@ -174,6 +237,7 @@
         "DB2.HOUSE",
         "DB2.MOTOR",
         "DB2.POLICY",
+        "DB2BIND.JCL",
         "LGCMAREA",
         "LGPOLICY",
         "LGSTSQ"
@@ -196,13 +260,17 @@
       "type": "sql-include"
     },
     "LGSTSQ": {
-      "depends_on": [],
+      "depends_on": [
+        "CDEF121.JCL",
+        "COBOL.JCL"
+      ],
       "description": "TDQ logger for diagnostics",
       "type": "cobol"
     },
     "LGUCDB01": {
       "depends_on": [
         "DB2.CUSTOMER",
+        "DB2BIND.JCL",
         "LGCMAREA",
         "LGPOLICY",
         "LGSTSQ",
@@ -235,6 +303,7 @@
         "DB2.HOUSE",
         "DB2.MOTOR",
         "DB2.POLICY",
+        "DB2BIND.JCL",
         "LGCMAREA",
         "LGPOLICY",
         "LGSTSQ",
