@@ -30,6 +30,38 @@
       "description": "VSAM cluster for policy summaries",
       "type": "vsam-file"
     },
+    "LGACDB01": {
+      "depends_on": [
+        "LGACDB02",
+        "LGACVS01",
+        "LGCMAREA",
+        "LGSTSQ"
+      ],
+      "description": "Add customer DB2 backend service",
+      "type": "cobol"
+    },
+    "LGACDB02": {
+      "depends_on": [],
+      "description": null,
+      "type": null
+    },
+    "LGACUS01": {
+      "depends_on": [
+        "LGACDB01",
+        "LGCMAREA",
+        "LGSTSQ"
+      ],
+      "description": "Add customer front-end program",
+      "type": "cobol"
+    },
+    "LGACVS01": {
+      "depends_on": [
+        "LGCMAREA",
+        "LGSTSQ"
+      ],
+      "description": "Customer VSAM writer service",
+      "type": "cobol"
+    },
     "LGAPDB01": {
       "depends_on": [
         "DB2.COMMERCIAL",
@@ -68,6 +100,48 @@
       "description": "Shared commarea layout",
       "type": "copybook"
     },
+    "LGDPDB01": {
+      "depends_on": [],
+      "description": null,
+      "type": null
+    },
+    "LGDPOL01": {
+      "depends_on": [
+        "LGCMAREA",
+        "LGDPDB01",
+        "LGSTSQ"
+      ],
+      "description": "Delete policy front-end program",
+      "type": "cobol"
+    },
+    "LGICDB01": {
+      "depends_on": [],
+      "description": null,
+      "type": null
+    },
+    "LGICUS01": {
+      "depends_on": [
+        "LGCMAREA",
+        "LGICDB01",
+        "LGSTSQ"
+      ],
+      "description": "Inquire customer front-end program",
+      "type": "cobol"
+    },
+    "LGIPDB01": {
+      "depends_on": [],
+      "description": null,
+      "type": null
+    },
+    "LGIPOL01": {
+      "depends_on": [
+        "LGCMAREA",
+        "LGIPDB01",
+        "LGSTSQ"
+      ],
+      "description": "Inquire policy front-end program",
+      "type": "cobol"
+    },
     "LGPOLICY": {
       "depends_on": [],
       "description": "Embedded SQL host variable definitions",
@@ -76,6 +150,34 @@
     "LGSTSQ": {
       "depends_on": [],
       "description": "TDQ logger for diagnostics",
+      "type": "cobol"
+    },
+    "LGUCDB01": {
+      "depends_on": [],
+      "description": null,
+      "type": null
+    },
+    "LGUCUS01": {
+      "depends_on": [
+        "LGCMAREA",
+        "LGSTSQ",
+        "LGUCDB01"
+      ],
+      "description": "Update customer front-end program",
+      "type": "cobol"
+    },
+    "LGUPDB01": {
+      "depends_on": [],
+      "description": null,
+      "type": null
+    },
+    "LGUPOL01": {
+      "depends_on": [
+        "LGCMAREA",
+        "LGSTSQ",
+        "LGUPDB01"
+      ],
+      "description": "Update policy front-end program",
       "type": "cobol"
     }
   }
