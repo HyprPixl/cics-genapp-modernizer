@@ -141,6 +141,42 @@
 - Error Handling: returns `01` for policy not found, `02` for timestamp mismatch (concurrent update), `90` for SQL errors; includes transaction rollback on failures and comprehensive cursor cleanup.
 - Notes: uses DB2 cursor with FOR UPDATE to lock policy records; validates last-changed timestamp to detect concurrent modifications; updates both main POLICY table and policy-type-specific tables; refreshes timestamp and synchronizes to VSAM on successful completion.
 
+## Workload Simulation Configuration
+
+### GENAPP.TXT – Main Workload Simulator Configuration
+- Purpose: primary configuration file for IBM Workload Simulator for z/OS (WSim) defining network parameters, transaction paths, and simulation execution profiles.
+- Network Configuration:
+  - `BUFSIZE=1920`: Terminal buffer size for 3270 data streams
+  - `Conrate=No`: Disables connection rate limiting 
+  - `DELAY=F1`: Uses F1 delay timing for transaction pacing
+  - `LUTYPE=LU2`: Configures for LU Type 2 (3270 terminal) sessions
+  - `UTI=100`: Sets utilization target to 100% for maximum throughput
+  - `MLOG=YES, MLEN=1000`: Enables message logging with 1000-character limit
+  - `OPTIONS=(DEBUG)`: Activates debug mode for detailed execution tracing
+- Transaction Paths:
+  - `ADDTRANS`: Add-only transaction mix (`SSC1A1`, `SSP1A1`, `SSP2A1`, `SSP3A1`, `SSP4A1`) with 5:1:1:1:1 distribution
+  - `ALLTRANS`: Full CRUD transaction mix including inquire, update, and delete operations across all policy types
+  - `WEB1`: Web service transaction path (`WSC1I1`, `WSC1A1`) for HTTP-based scenarios
+- Terminal Configuration:
+  - `GNWS001 VTAMAPPL`: VTAM application identifier for SNA session management
+  - `LUSS001 LU`: Logical unit definition with `FRSTTXT=#ONCICS` for CICS connection initialization
+  - TCP/IP configuration (commented): Ready for web service simulation via TCP port 4321
+- Dependencies: references simulation script files (`SSC1*`, `SSP1*`, `SSP2*`, `SSP3*`, `SSP4*`, `WSC1*`), `#ONCICS` initialization script, and VTAM/CICS connectivity infrastructure.
+
+### #SSVARS.TXT – Shared Variables and Constants Definition
+- Purpose: WSim shared variable definition file providing global constants, counters, and data conversion tables used across all simulation scripts.
+- Variable Categories:
+  - Runtime Control: `STRT_Debugit`, `STRT_WAS_Route`, `STRT_LU2_Terms`, `STRT_WAS_Terms`, `STRT_Stats_Out` for execution flow control
+  - Transaction Counters: Shared integer counters (`Count_lu2_*`, `Count_was_*`) tracking successful transactions per script type (SSC1, SSP1-4 variants)
+  - Error Counters: Error tracking counters (`ECount_lu2_*`, `ECount_was_*`) for failed transaction monitoring and reporting
+  - Working Variables: Unshared integers (`I1-I5`, `CUST_NUM`, `POL_NUM`, `TRAN_ID`) for temporary calculations and data generation
+  - String Variables: Unshared string variables (`S1-S5`, `VS1-VS10`) for dynamic data formatting and screen interaction
+- Data Conversion Tables:
+  - `E2A`: EBCDIC-to-ASCII conversion table (256-byte hexadecimal constant) for mainframe-to-workstation character translation
+  - `A2E`: ASCII-to-EBCDIC conversion table for reverse character translation
+- Bit Flags: Control flags (`Found`, `Tran_Error`, `FEmail`) for conditional logic and state management across simulation scenarios
+- Dependencies: included by all simulation scripts via `@Include #SSVARS` directive; supports both LU2 (3270 terminal) and WAS (web service) simulation modes.
+
 ## Immediate Findings & Questions
 - `install.sh` expects `tsocmd` and USS `cp` with dataset support; confirm environment prerequisites.
 - Customer experience assets hint at established monitoring and test flows; identify current owners.
