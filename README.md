@@ -141,6 +141,94 @@
 - Error Handling: returns `01` for policy not found, `02` for timestamp mismatch (concurrent update), `90` for SQL errors; includes transaction rollback on failures and comprehensive cursor cleanup.
 - Notes: uses DB2 cursor with FOR UPDATE to lock policy records; validates last-changed timestamp to detect concurrent modifications; updates both main POLICY table and policy-type-specific tables; refreshes timestamp and synchronizes to VSAM on successful completion.
 
+## Web Service Simulation Scripts
+
+### WSC1A1 – SOAP Customer Add Simulation
+- Purpose: web service test script for customer creation functionality through SOAP interface to `LGACUS01`.
+- Structure: generates complete SOAP envelope with customer data payload and HTTP headers for web service invocation.
+- Dependencies: includes `#SSVARS` for shared variables, `SSC1A2` for additional customer data, `WASerror` for error handling routines.
+- Data Sources: uses simulation variables (`VS1`, `VS2`, etc.) for synthetic customer names, addresses, and personal details.
+- Request Format: constructs `LGACUS01Operation` SOAP message with `01ACUS` request ID and customer demographic fields.
+- Notes: targets endpoint `/GENAPP/LGACUS01` with proper SOAP action headers; handles EBCDIC/ASCII translation for mainframe integration.
+
+### WSC1I1 – SOAP Customer Inquiry Simulation  
+- Purpose: web service test script for customer information retrieval through SOAP interface to `LGICUS01`.
+- Structure: generates SOAP envelope with inquiry request and random customer number generation for testing.
+- Dependencies: includes `#SSVARS` for shared variables, `WASerror` for error handling routines.
+- Data Sources: uses `Random(1,10)` function to generate test customer numbers for inquiry operations.
+- Request Format: constructs `LGICUS01Operation` SOAP message with `01ICUS` request ID and empty response fields for population.
+- Notes: targets endpoint `/GENAPP/LGICUS01`; designed to validate inquiry response structure and data retrieval accuracy.
+
+### WSLGCF – Customer Validation Web Service  
+- Purpose: specialized simulation script for fetching valid customer numbers through `LGICVS01` service interface.
+- Structure: builds SOAP request to customer validation service with error detection and response parsing logic.
+- Dependencies: relies on `LGICVS01` web service operation for customer number validation and retrieval.
+- Error Handling: includes validation logic checking for `<Comma_Data_High>` response elements; signals `StopNow` on validation failures.
+- Response Processing: extracts customer number from SOAP response using substring operations and EBCDIC-to-decimal conversion.
+- Notes: targets endpoint `/GENAPP/LGICVS01`; includes abort conditions for policy errors and stop signals; provides valid customer numbers for dependent simulation flows.
+
+## Reference Data and Lookup Tables
+
+### CCOLOR – Car Color Lookup Table
+- Purpose: MSGUTBL lookup table providing standard vehicle color options for motor insurance policy simulation.
+- Contents: includes 26 color values such as Blue, Purple, Beige, Grey, Orange, Cream, Green, Violet, Indigo, Bronze, Platinum, Azure, Charcoal, Claret, Burgundy, Aqua, Sunburst, Red, White, Silver, Black, Pink, Yellow, Turquoise, Gold, Brown.
+- Usage: referenced by simulation scripts and policy creation workflows requiring vehicle color selection.
+- Format: standard MSGUTBL structure with descriptive color names suitable for user interface presentation.
+
+### CMAKE – Car Make Lookup Table  
+- Purpose: MSGUTBL lookup table providing standard vehicle manufacturer options for motor insurance policy simulation.
+- Contents: includes 21 manufacturer names such as Ford, Mazda, Honda, Cadillac, Ferrari, Hyundai, Peugeot, Renault, Citroen, Land Rover, Mini, Volkswagen, GMC, Vauxhall, Porsche, BMW, Mercedes, Oldsmobile, Toyota, Lada, Skoda.
+- Usage: referenced by simulation scripts and policy creation workflows requiring vehicle manufacturer selection.
+- Format: standard MSGUTBL structure with manufacturer brand names.
+
+### CMODEL – Car Model Lookup Table
+- Purpose: MSGUTBL lookup table providing standard vehicle model options for motor insurance policy simulation.
+- Contents: includes 23 model names such as 205, Twinkle, 911, Riva, Omega, Fiesta, Discovery, Capri, Cortina, Uno, Astra, CRV, Golf, Polo, Z5, Firebird, Thunderbird, Cavalier, 6, Corsa, Boxster, Smallbit, Backseater.
+- Usage: referenced by simulation scripts and policy creation workflows requiring vehicle model selection.
+- Format: standard MSGUTBL structure with model names ranging from numeric designations to descriptive names.
+
+### CTYPE – Coverage Type Lookup Table
+- Purpose: MSGUTBL lookup table providing standard insurance coverage and risk types for policy simulation.
+- Contents: includes 13 coverage types such as Theft, Fire, Accident, Water Damage, Subsidence, Injury, Wind Damage, Vandalism, Weather Damage, Crash, Ice Damage, Death, Serious Illness.
+- Usage: referenced by simulation scripts and policy creation workflows requiring coverage type selection across multiple insurance product lines.
+- Format: standard MSGUTBL structure with descriptive coverage names suitable for policy documentation.
+
+### FNAME – First Names Lookup Table
+- Purpose: MSGUTBL lookup table providing standard first names for customer data simulation and testing.
+- Contents: extensive list of common first names including Adrian, John, Robert, Michael, William, David, Richard, Charles, Joseph, Thomas, Christopher, Daniel, Paul, Mark, Donald, George, Kenneth, Steven, Edward, Brian, Ronald, Anthony, Kevin, Jason, Matthew, Gary, Timothy, and many others.
+- Usage: referenced by customer creation and simulation workflows requiring realistic personal name data.
+- Format: standard MSGUTBL structure with names formatted for consistent 10-character field width.
+
+### HTYPE – House Type Lookup Table
+- Purpose: MSGUTBL lookup table providing standard residential property types for house insurance policy simulation.
+- Contents: includes 17 property types such as Detached, Semi, Bungalow, Flat, Apartment, Farm, B and B, Hotel, Castle, Prison, Garage, Terraced, Mansion, Skip, Condo, Palace, Bedsit.
+- Usage: referenced by simulation scripts and house policy creation workflows requiring property type classification.
+- Format: standard MSGUTBL structure with property type descriptions.
+
+### PCODE – Postal Code Lookup Table
+- Purpose: MSGUTBL lookup table providing standard UK postal codes for address simulation and geographic testing.
+- Contents: extensive list of UK postal codes starting with prefixes like AB (Aberdeen area), including codes such as AB239AB, AB239AF, AB259AB, AB309AA, and hundreds of others covering multiple geographic regions.
+- Usage: referenced by customer and property address generation workflows requiring realistic UK postal code data.
+- Format: standard MSGUTBL structure with properly formatted UK postal code patterns.
+
+### PTYPE – Property Type Lookup Table  
+- Purpose: MSGUTBL lookup table providing standard commercial property types for business insurance policy simulation.
+- Contents: includes 17 property types such as Office, Shop, Retail, Warehouse, Wholesale, Chemist, Park, B & B, Hotel, Prison, Garage, Station, Supermarket, Shopping Mall, Stadium, School, Hospital.
+- Usage: referenced by simulation scripts and commercial policy creation workflows requiring business property classification.
+- Format: standard MSGUTBL structure with commercial property descriptions.
+
+### RTYPE – Road Type Lookup Table
+- Purpose: MSGUTBL lookup table providing standard street type abbreviations for address formatting in simulation.
+- Contents: includes 8 road type entries with both full and abbreviated forms: Road/RD, Street/ST, Avenue/AVE, Close/CL.
+- Usage: referenced by address generation workflows requiring proper street type formatting for UK addressing standards.
+- Format: standard MSGUTBL structure with both full names and common abbreviations.
+
+### SNAME – Surname Lookup Table
+- Purpose: MSGUTBL lookup table providing standard surnames for customer data simulation and testing.
+- Contents: extensive list of common British surnames including Smith, Jones, Taylor, Williams, Brown, Davies, Evans, Wilson, Thomas, Roberts, Johnson, Lewis, Walker, Robinson, Wood, Thompson, White, Watson, Jackson, Wright, Green, Harris, Cooper, King, Lee, Martin, Clarke, and many others.
+- Usage: referenced by customer creation and simulation workflows requiring realistic surname data for demographic testing.
+- Format: standard MSGUTBL structure with surnames formatted for consistent 10-character field width.
+
 ## Immediate Findings & Questions
 - `install.sh` expects `tsocmd` and USS `cp` with dataset support; confirm environment prerequisites.
 - Customer experience assets hint at established monitoring and test flows; identify current owners.
