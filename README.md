@@ -147,6 +147,126 @@
 - Need to verify whether source members align with current CICS region configuration.
 - Images folder currently holds `initial_topology.jpg`; consider exporting architecture notes from there.
 
+## Workstation Simulator Transaction Scripts
+### Customer Transaction Scripts (SSC1*)
+#### SSC1A1 - Customer Add Simulation
+- Purpose: simulates creation of new customer records through the 3270 interface using transaction `SSC1`.
+- Flow: navigates to customer add screen, generates random customer data (names from UTBL tables, birth dates, addresses), submits via PF2, validates success message "New Customer Inserted".
+- Data Generation: uses UTBL reference tables (`Fname`, `Sname`, `Pcode`) for realistic test data; generates birth dates between 1940-1980, random addresses and postal codes.
+- Error Handling: increments `eCount_lu2_SSC1A1` counter on failure, includes optional email notification when transaction count exceeds `STRT_Stats_Out` threshold.
+- Dependencies: `#SSVARS` for shared simulation variables, UTBL reference data tables, transaction `SSC1` (maps to `LGACUS01` COBOL program).
+
+#### SSC1I1 - Customer Inquiry Simulation  
+- Purpose: simulates customer information retrieval through transaction `SSC1` inquiry function (option 1).
+- Flow: first executes `LGCF` to establish customer context, extracts customer number from screen, then performs inquiry via `SSC1` transaction.
+- Interface: positions cursor at row 22, column 25 and types '1' to select inquiry option, validates screen response.
+- Error Handling: includes counter `Count_lu2_SSC1I1` for performance tracking, debug logging when `STRT_Debugit = 'ON'`.
+- Dependencies: requires active customer session context from `LGCF`, transaction `SSC1` (maps to `LGICUS01` COBOL program).
+
+### Motor Policy Transaction Scripts (SSP1*)
+#### SSP1A1 - Motor Policy Add Simulation
+- Purpose: simulates motor insurance policy creation through transaction `SSP1` add function.
+- Flow: establishes customer context via `LGCF`, extracts customer number, generates comprehensive motor policy data including vehicle details, dates, and premiums.
+- Data Generation: creates start/expiry dates (1997-2007), vehicle make/model from UTBL tables (`Cmake`, `Cmodel`), registration numbers, colors (`Ccolor`), values (13000-38000), and manufactured dates (1975-2007).
+- Validation: expects success message "New Motor Policy Inserted", logs failure via `eCount_lu2_SSP1A1` counter.
+- Dependencies: customer context from `LGCF`, UTBL reference tables for vehicle data, transaction `SSP1` (maps to `LGAPOL01` COBOL program).
+
+#### SSP1I1 - Motor Policy Inquiry Simulation
+- Purpose: simulates motor policy information retrieval using policy finder and inquiry functions.
+- Flow: uses `LGPF M` command to locate motor policies for customer, extracts policy details from screen, then performs detailed inquiry via `SSP1`.
+- Data Extraction: parses screen for policy key format, validates policy type 'M' (Motor), extracts policy and customer numbers for inquiry.
+- Error Handling: includes conditional logic to skip inquiry if no motor policy found, tracks performance via `Count_lu2_SSP1I1`.
+- Dependencies: `LGPF` policy finder utility, transaction `SSP1` (maps to `LGIPOL01` COBOL program).
+
+#### SSP1U1 - Motor Policy Update Simulation
+- Purpose: simulates modification of existing motor policy details through transaction `SSP1` update function (option 4).
+- Flow: locates existing motor policy via `LGPF M`, validates "No data" condition, generates updated policy information, submits changes.
+- Data Updates: modifies policy dates, vehicle make/model, value, registration, color, premium amounts using randomized data within realistic ranges.
+- Validation: expects "Motor Policy Updated" success message, handles update failures via `eCount_lu2_SSP1U1` error counter.
+- Dependencies: existing motor policy records, UTBL reference tables, transaction `SSP1` (maps to `LGUPOL01` COBOL program).
+
+#### SSP1D1 - Motor Policy Delete Simulation  
+- Purpose: simulates deletion of motor insurance policies through transaction `SSP1` delete function (option 3).
+- Flow: uses policy finder to locate motor policy, extracts policy identifiers, performs deletion via option 3.
+- Validation: expects "Motor Policy Deleted" confirmation message, logs deletion failures via `eCount_lu2_SSP1D1`.
+- Dependencies: existing policy records, `LGPF` policy finder, transaction `SSP1` (maps to `LGDPOL01` COBOL program).
+
+### Endowment/Life Policy Transaction Scripts (SSP2*)
+#### SSP2A1 - Endowment Policy Add Simulation
+- Purpose: simulates life insurance policy creation through transaction `SSP2` add function.
+- Flow: establishes customer context, generates endowment policy data including beneficiary information, coverage amounts, and policy terms.
+- Data Generation: creates policy dates (1997-2007), coverage amounts (10000-999000), beneficiary names from UTBL tables, random Y/N flags for policy options.
+- Validation: expects "New Life Policy Inserted" success message, tracks failures via `eCount_lu2_SSP2A1`.
+- Dependencies: customer context, UTBL name tables (`Fname`, `Sname`), transaction `SSP2` (maps to `LGAPOL01` COBOL program).
+
+#### SSP2U1 - Endowment Policy Update Simulation
+- Purpose: simulates updates to existing endowment policy details.
+- Flow: locates endowment policy via `LGPF E`, generates updated beneficiary and coverage information, submits via update option.
+- Data Updates: modifies beneficiary names, coverage amounts, policy flags (withholding tax, medical details, etc.) using random data.
+- Dependencies: existing endowment policies, transaction `SSP2` (maps to `LGUPOL01` COBOL program).
+
+#### SSP2I1 - Endowment Policy Inquiry Simulation
+- Purpose: retrieves endowment policy details through inquiry function.
+- Dependencies: `LGPF` policy finder, transaction `SSP2` (maps to `LGIPOL01` COBOL program).
+
+#### SSP2D1 - Endowment Policy Delete Simulation
+- Purpose: deletes endowment policies through delete function.
+- Dependencies: existing policy records, transaction `SSP2` (maps to `LGDPOL01` COBOL program).
+
+### House Policy Transaction Scripts (SSP3*)
+#### SSP3A1 - House Policy Add Simulation
+- Purpose: simulates house insurance policy creation through transaction `SSP3`.
+- Flow: establishes customer context, generates house policy data including property details, coverage types, and premiums.
+- Data Generation: creates policy dates, house types from UTBL (`Htype`), property values (100000-999000), address information, postal codes from UTBL (`Pcode`).
+- Validation: expects "New House Policy Inserted" confirmation message.
+- Dependencies: customer context, UTBL reference tables for house data, transaction `SSP3` (maps to `LGAPOL01` COBOL program).
+
+#### SSP3U1 - House Policy Update Simulation  
+- Purpose: simulates updates to existing house policy details.
+- Flow: locates house policy via `LGPF H`, generates updated property and coverage information.
+- Dependencies: existing house policies, transaction `SSP3` (maps to `LGUPOL01` COBOL program).  
+
+#### SSP3I1 - House Policy Inquiry Simulation
+- Purpose: retrieves house policy information through inquiry function.
+- Dependencies: `LGPF` policy finder, transaction `SSP3` (maps to `LGIPOL01` COBOL program).
+
+#### SSP3D1 - House Policy Delete Simulation
+- Purpose: deletes house insurance policies.
+- Validation: expects "House Policy Deleted" confirmation message.
+- Dependencies: existing policy records, transaction `SSP3` (maps to `LGDPOL01` COBOL program).
+
+### Commercial Policy Transaction Scripts (SSP4*)  
+#### SSP4A1 - Commercial Policy Add Simulation
+- Purpose: simulates commercial property insurance policy creation through transaction `SSP4`.
+- Flow: generates comprehensive commercial property data including location coordinates, peril coverages, and premium calculations.
+- Data Generation: creates property addresses, postal codes, latitude/longitude coordinates, customer names, property types from UTBL (`Ptype`), and detailed peril coverages (Fire, Crime, Flood, Weather) with corresponding premiums.
+- Validation: expects "New Commercial Policy Inserted" success message.
+- Dependencies: extensive UTBL reference tables, transaction `SSP4` (maps to `LGAPOL01` COBOL program).
+
+#### SSP4I1 - Commercial Policy Inquiry Simulation
+- Purpose: retrieves commercial policy details through inquiry function.
+- Dependencies: `LGPF` policy finder, transaction `SSP4` (maps to `LGIPOL01` COBOL program).
+
+#### SSP4D1 - Commercial Policy Delete Simulation  
+- Purpose: deletes commercial property policies.
+- Validation: expects "Commercial Policy Deleted" confirmation message.
+- Dependencies: existing policy records, transaction `SSP4` (maps to `LGDPOL01` COBOL program).
+
+### Data Generation Modules (A2 Scripts)
+- **SSC1A2**: customer data generation module providing variables (VS1-VS6) for names, birth dates, addresses, and postal codes used by customer add simulations.
+- **SSP1A2**: motor policy data generation module providing variables (VS1-VS10) for customer numbers, policy dates, vehicle details (make/model/color), values, and registration information.
+- **SSP2A2**: endowment policy data generation module providing variables for beneficiary names, coverage amounts, policy terms, and flags.
+- **SSP3A2**: house policy data generation module providing variables for property details, house types, values, and location information.
+
+### Simulation Script Architecture
+- **Variable Sharing**: all scripts include `#SSVARS` for shared simulation state, counters, and configuration.
+- **Data Generation**: extensive use of UTBL reference tables for realistic test data (names, codes, types) and A2 modules for structured variable sets.
+- **Error Tracking**: consistent error counter naming (`eCount_lu2_*`) and optional email notification system.
+- **Debug Support**: conditional debug logging when `STRT_Debugit = 'ON'`, performance statistics when `STRT_Debugit = 'TEST'`.
+- **Screen Automation**: 3270 terminal automation using cursor positioning, field typing, function key transmission, and screen validation.
+- **Transaction Integration**: each script maps to corresponding CICS transactions and COBOL programs in the GenApp system.
+- **Modular Design**: A1 scripts handle transaction flow and screen interaction, A2 modules provide reusable data generation logic.
+
 ## Next Steps
 - Inventory high-priority COBOL transactions first (e.g., customer inquiry vs policy update paths).
 - Decide documentation template for program deep-dives; store drafts alongside `AGENTS.md` notes.
